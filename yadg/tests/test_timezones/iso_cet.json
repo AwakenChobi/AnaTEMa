@@ -1,0 +1,16 @@
+{
+    "metadata": {
+        "provenance": "manual", 
+        "schema_version": "4.0.0", 
+        "timezone": "Europe/Berlin"
+    },
+    "steps": [{
+        "parser": "basiccsv",
+        "import": {"files": ["case_iso.ssv"]},
+        "parameters": {
+            "sep": ";", 
+            "units": {"flow": "ml/min", "T": "K", "p": "atm"}, 
+            "timestamp": {"timestamp": {"index": 0}}
+        }
+    }]
+}
