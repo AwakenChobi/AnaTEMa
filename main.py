@@ -1,8 +1,9 @@
 import quadstarfiles as qsf
 import matplotlib.pyplot as plt
+import numpy as np
 import tkinter as tk
 from tkinter import ttk, Tk, filedialog
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from pathlib import Path
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401tk
 
@@ -30,10 +31,11 @@ print("Number of cycles:", len(cycles))
 
 def plot_2d(ax, cycles, cycle_idx):
     ax.clear()
+    #cycles[nº_of_cycle][0: mandatory, since the data structure is [dictionary], so this cero get rid of the list]
     cycle = cycles[cycle_idx][0]
     x = cycle['Mass']
     y = cycle['Ion Current']
-    ax.plot(x, y, marker='o')
+    ax.plot(x, y) #One could change the marker style here, e.g. 'o' for circles, 's' for squares, etc.
     ax.set_xlabel('Mass')
     ax.set_ylabel('Ion current (log scale)')
     ax.set_yscale('log')
@@ -62,6 +64,11 @@ def plot(cycles):
     fig = plt.Figure(figsize=(8, 5))
     ax = fig.add_subplot(111)
     canvas = FigureCanvasTkAgg(fig, master=root)
+    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=1)
+
+    # Add the Matplotlib toolbar for zoom/pan
+    toolbar = NavigationToolbar2Tk(canvas, root)
+    toolbar.update()
     canvas.get_tk_widget().pack(fill=tk.BOTH, expand=1)
 
     current_cycle = tk.IntVar(value=0)
@@ -96,6 +103,18 @@ def plot(cycles):
             cycle_frame.pack(side=tk.TOP, fill=tk.X)
         update_plot()
 
+    def go_to_cycle():
+        try:
+            idx = int(cycle_entry.get()) - 1
+            if 0 <= idx < len(cycles):
+                current_cycle.set(idx)
+                update_plot()
+            else:
+                tk.messagebox.showerror("Error", f"Cycle must be between 1 and {len(cycles)}")
+        except ValueError:
+            tk.messagebox.showerror("Error", "Please enter a valid integer.")
+
+
     # Controls
     control_frame = ttk.Frame(root)
     control_frame.pack(side=tk.TOP, fill=tk.X)
@@ -111,14 +130,21 @@ def plot(cycles):
     next_btn = ttk.Button(cycle_frame, text="Next Cycle", command=next_cycle)
     next_btn.pack(side=tk.LEFT)
 
+    # Entry for cycle number
+    cycle_entry = ttk.Entry(cycle_frame, width=5)
+    cycle_entry.pack(side=tk.LEFT, padx=5)
+    cycle_entry.insert(0, "1")
+
+    go_btn = ttk.Button(cycle_frame, text="Go", command=go_to_cycle)
+    go_btn.pack(side=tk.LEFT)
+
+
     update_plot()
     root.mainloop()
 
 # Plot the first cycle if available
 if cycles:
-    first_cycle = cycles[0][0]
-    x = first_cycle['Mass']
-    y = first_cycle['Ion Current']
+    plot(cycles)
 
     plt.figure(figsize=(8, 5))
     plt.plot(x, y, marker='o')
