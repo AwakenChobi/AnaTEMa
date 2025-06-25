@@ -204,7 +204,7 @@ def _read_value(data: bytes, offset: int, dtype: np.dtype) -> Any:
     value = np.frombuffer(data, offset=offset, dtype=dtype, count=1)
     item = value.item()
     if value.dtype.names:
-        item = [i.decode() if isinstance(i, bytes) else i for i in item]
+        item = [i.decode('utf-8', errors='ignore') if isinstance(i, bytes) else i for i in item]
         return dict(zip(value.dtype.names, item))
     return item.decode() if isinstance(item, bytes) else item
 

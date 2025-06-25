@@ -1,6 +1,10 @@
-from tkinter import Tk, filedialog
-from yadg.extractors.quadstar.sac import extract_from_path
+import quadstarfiles as qsf
+import matplotlib.pyplot as plt
+import tkinter as tk
+from tkinter import ttk, Tk, filedialog
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from pathlib import Path
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401tk
 
 # Hide the main Tk window
 root = Tk()
@@ -12,17 +16,118 @@ file_path = filedialog.askopenfilename(
 )
 
 if file_path:
-    datatree = extract_from_path(Path(file_path))
+    cycles, meta = qsf.process(Path(file_path))
 else:
     print("No file selected.")
     exit()
 
-# Print the structure of the DataTree to understand how cycles are stored
-print("datatree:", datatree)
-print("Children nodes:", datatree.children)
-print("Attributes:", getattr(datatree, "attrs", None))
-print("Keys:", list(datatree.keys()) if hasattr(datatree, "keys") else None)
+print(type(cycles))
+#print("Cycles:", cycles)
+print(type(meta))
+#print("Meta:", meta)
+print("Number of cycles:", len(cycles))
+#print("First cycle:", cycles[0] if cycles else "No cycles found.")
 
-# If datatree has children nodes (e.g., one per cycle), list them
-if hasattr(datatree, "children"):
-    print("Cycle node names:", list(datatree.children.keys()))
+def plot_2d(ax, cycles, cycle_idx):
+    ax.clear()
+    cycle = cycles[cycle_idx][0]
+    x = cycle['Mass']
+    y = cycle['Ion Current']
+    ax.plot(x, y, marker='o')
+    ax.set_xlabel('Mass')
+    ax.set_ylabel('Ion current (log scale)')
+    ax.set_yscale('log')
+    ax.set_title(f'Cycle {cycle_idx+1}')
+    ax.grid(True, which="both", ls="--")
+
+def plot_3d(ax, cycles):
+    ax.clear()
+    for idx, cycle_list in enumerate(cycles):
+        cycle = cycle_list[0]
+        x = np.array(cycle['Mass'])
+        y = np.array(cycle['Ion Current'])
+        z = np.full_like(x, idx)
+        ax.plot(x, y, z, label=f'Cycle {idx+1}')
+    ax.set_xlabel('Mass')
+    ax.set_ylabel('Ion current (log scale)')
+    ax.set_zlabel('Cycle')
+    ax.set_yscale('log')
+    ax.set_title('All Cycles')
+    ax.grid(True, which="both", ls="--")
+
+def plot(cycles):
+    root = tk.Tk()
+    root.title("Mass Spectra Viewer")
+
+    fig = plt.Figure(figsize=(8, 5))
+    ax = fig.add_subplot(111)
+    canvas = FigureCanvasTkAgg(fig, master=root)
+    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=1)
+
+    current_cycle = tk.IntVar(value=0)
+    mode = tk.StringVar(value="2D")
+
+    def update_plot():
+        ax.clear()
+        if mode.get() == "2D":
+            plot_2d(ax, cycles, current_cycle.get())
+        else:
+            fig.clf()
+            ax3d = fig.add_subplot(111, projection='3d')
+            plot_3d(ax3d, cycles)
+        canvas.draw()
+
+    def next_cycle():
+        if current_cycle.get() < len(cycles) - 1:
+            current_cycle.set(current_cycle.get() + 1)
+            update_plot()
+
+    def prev_cycle():
+        if current_cycle.get() > 0:
+            current_cycle.set(current_cycle.get() - 1)
+            update_plot()
+
+    def switch_mode():
+        if mode.get() == "2D":
+            mode.set("3D")
+            cycle_frame.pack_forget()
+        else:
+            mode.set("2D")
+            cycle_frame.pack(side=tk.TOP, fill=tk.X)
+        update_plot()
+
+    # Controls
+    control_frame = ttk.Frame(root)
+    control_frame.pack(side=tk.TOP, fill=tk.X)
+
+    switch_btn = ttk.Button(control_frame, text="Switch 2D/3D", command=switch_mode)
+    switch_btn.pack(side=tk.LEFT, padx=5, pady=5)
+
+    cycle_frame = ttk.Frame(control_frame)
+    cycle_frame.pack(side=tk.LEFT, padx=5, pady=5)
+
+    prev_btn = ttk.Button(cycle_frame, text="Previous Cycle", command=prev_cycle)
+    prev_btn.pack(side=tk.LEFT)
+    next_btn = ttk.Button(cycle_frame, text="Next Cycle", command=next_cycle)
+    next_btn.pack(side=tk.LEFT)
+
+    update_plot()
+    root.mainloop()
+
+# Plot the first cycle if available
+if cycles:
+    first_cycle = cycles[0][0]
+    x = first_cycle['Mass']
+    y = first_cycle['Ion Current']
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(x, y, marker='o')
+    plt.yscale('log')
+    plt.xlabel('Mass')
+    plt.ylabel('Ion current (log scale)')
+    plt.title('First Cycle: Mass vs Ion Current')
+    plt.grid(True, which="both", ls="--")
+    plt.tight_layout()
+    plt.show()
+else:
+    print("No cycles to plot.")
