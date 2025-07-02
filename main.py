@@ -4,30 +4,9 @@ import numpy as np
 import tkinter as tk
 from tkinter import ttk, Tk, filedialog
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.ticker import MaxNLocator
 from pathlib import Path
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401tk
-
-# Hide the main Tk window
-root = Tk()
-root.withdraw()
-
-file_path = filedialog.askopenfilename(
-    title="Select a .sac file",
-    filetypes=[("SAC files", "*.sac")]
-)
-
-if file_path:
-    cycles, meta = qsf.process(Path(file_path))
-else:
-    print("No file selected.")
-    exit()
-
-print(type(cycles))
-#print("Cycles:", cycles)
-print(type(meta))
-#print("Meta:", meta)
-print("Number of cycles:", len(cycles))
-#print("First cycle:", cycles[0] if cycles else "No cycles found.")
 
 def plot_2d(ax, cycles, cycle_idx):
     ax.clear()
@@ -44,24 +23,27 @@ def plot_2d(ax, cycles, cycle_idx):
 
 def plot_3d(ax, cycles):
     ax.clear()
+    ax.set_box_aspect([2, 2, 1])  # Aspect ratio is set to make it more visually appealing
+    ax.set_xlabel('Mass')
+    ax.set_ylabel('Cycle')
+    ax.set_zlabel('Ion current (log scale)')
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.set_title('All Cycles')
+    ax.grid(True, linestyle=':', linewidth=0.5, alpha=0.3)
+
     for idx, cycle_list in enumerate(cycles):
         cycle = cycle_list[0]
-        x = np.array(cycle['Mass'])
-        y = np.array(cycle['Ion Current'])
-        z = np.full_like(x, idx)
-        ax.plot(x, y, z, label=f'Cycle {idx+1}')
-    ax.set_xlabel('Mass')
-    ax.set_ylabel('Ion current (log scale)')
-    ax.set_zlabel('Cycle')
-    ax.set_yscale('log')
-    ax.set_title('All Cycles')
-    ax.grid(True, which="both", ls="--")
+        x = cycle['Mass']
+        y = [idx] * len(x)  # y is the cycle index, repeated for each point
+        z = cycle['Ion Current']
+        ax.plot(x, y, np.log10(z), color='blue')
 
 def plot(cycles):
     root = tk.Tk()
     root.title("Mass Spectra Viewer")
+    root.state('zoomed')
 
-    fig = plt.Figure(figsize=(8, 5))
+    fig = plt.Figure(figsize=(16, 6))
     ax = fig.add_subplot(111)
     canvas = FigureCanvasTkAgg(fig, master=root)
     canvas.get_tk_widget().pack(fill=tk.BOTH, expand=1)
@@ -75,13 +57,16 @@ def plot(cycles):
     mode = tk.StringVar(value="2D")
 
     def update_plot():
-        ax.clear()
+        # Remove all axes from the figure
+        fig.clf()
         if mode.get() == "2D":
+            fig.set_size_inches(15, 5)
+            ax = fig.add_subplot(111)
             plot_2d(ax, cycles, current_cycle.get())
         else:
-            fig.clf()
-            ax3d = fig.add_subplot(111, projection='3d')
-            plot_3d(ax3d, cycles)
+            fig.set_size_inches(17, 10)
+            ax = fig.add_subplot(111, projection='3d')
+            plot_3d(ax, cycles)
         canvas.draw()
 
     def next_cycle():
@@ -142,18 +127,26 @@ def plot(cycles):
     update_plot()
     root.mainloop()
 
-# Plot the first cycle if available
-if cycles:
-    plot(cycles)
+# Hide the main Tk window
+root = Tk()
+root.withdraw()
 
-    plt.figure(figsize=(8, 5))
-    plt.plot(x, y, marker='o')
-    plt.yscale('log')
-    plt.xlabel('Mass')
-    plt.ylabel('Ion current (log scale)')
-    plt.title('First Cycle: Mass vs Ion Current')
-    plt.grid(True, which="both", ls="--")
-    plt.tight_layout()
-    plt.show()
+file_path = filedialog.askopenfilename(
+    title="Select a .sac file",
+    filetypes=[("SAC files", "*.sac")]
+)
+
+if file_path:
+    cycles, meta = qsf.process(Path(file_path))
+    root.destroy()  # Destroy the hidden root before creating the plot window
+    plot(cycles)
 else:
-    print("No cycles to plot.")
+    print("No file selected.")
+    exit()
+
+print(type(cycles))
+#print("Cycles:", cycles)
+print(type(meta))
+#print("Meta:", meta)
+print("Number of cycles:", len(cycles))
+#print("First cycle:", cycles[0] if cycles else "No cycles found.")
