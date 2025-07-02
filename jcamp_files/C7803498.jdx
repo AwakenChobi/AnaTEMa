@@ -1,0 +1,30 @@
+##TITLE=Hydroxylamine
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=Japan AIST/NIMC Database- Spectrum MS-NW- 606
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=7803-49-8
+##$NIST MASS SPEC NO=228320
+##MOLFORM=H3 N O
+##MW=33
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=14
+##LASTX=34
+##FIRSTY=40
+##MAXX=34
+##MINX=14
+##MAXY=9999
+##MINY=13
+##NPOINTS=14
+##PEAK TABLE=(XY..XY)
+14,40 15,144 16,2512 17,647
+18,528 19,26 27,26 28,250
+29,13 30,1097 31,634 32,1864
+33,9999 34,53
+##END=

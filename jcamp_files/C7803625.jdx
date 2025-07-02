@@ -1,0 +1,28 @@
+##TITLE=Silane
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=7803-62-5
+##$NIST MASS SPEC NO=39
+##MOLFORM=H4 Si
+##MW=32
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=2
+##LASTX=34
+##FIRSTY=150
+##MAXX=34
+##MINX=2
+##MAXY=9999
+##MINY=10
+##NPOINTS=9
+##PEAK TABLE=(XY..XY)
+2,150 14,80 28,2752 29,2873
+30,9999 31,7907 32,711 33,240
+34,10
+##END=

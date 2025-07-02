@@ -1,0 +1,29 @@
+##TITLE=Ethyne, fluoro-
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=E.Kloster-Jensen ET AL. Helv. Chim. Acta,53,251(1970)
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=2713-09-9
+##$NIST MASS SPEC NO=298804
+##MOLFORM=C2 H F
+##MW=44
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=12
+##LASTX=45
+##FIRSTY=70
+##MAXX=45
+##MINX=12
+##MAXY=9999
+##MINY=70
+##NPOINTS=9
+##PEAK TABLE=(XY..XY)
+12,70 13,80 22,70 24,190
+25,751 31,1571 43,1001 44,9999
+45,240
+##END=

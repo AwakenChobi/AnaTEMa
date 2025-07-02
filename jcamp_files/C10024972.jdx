@@ -1,0 +1,28 @@
+##TITLE=Nitrous oxide
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=10024-97-2
+##$NIST MASS SPEC NO=70
+##MOLFORM=N2 O
+##MW=44
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=14
+##LASTX=45
+##FIRSTY=1291
+##MAXX=45
+##MINX=14
+##MAXY=9999
+##MINY=10
+##NPOINTS=9
+##PEAK TABLE=(XY..XY)
+14,1291 15,10 16,500 28,1081
+29,10 30,3113 31,10 44,9999
+45,70
+##END=

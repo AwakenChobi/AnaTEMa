@@ -1,0 +1,28 @@
+##TITLE=Hydrazine
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=302-01-2
+##$NIST MASS SPEC NO=38
+##MOLFORM=H4 N2
+##MW=32
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=14
+##LASTX=33
+##FIRSTY=490
+##MAXX=33
+##MINX=14
+##MAXY=9999
+##MINY=30
+##NPOINTS=11
+##PEAK TABLE=(XY..XY)
+14,490 15,811 16,2923 17,2612
+27,30 28,2142 29,4014 30,3133
+31,4734 32,9999 33,90
+##END=

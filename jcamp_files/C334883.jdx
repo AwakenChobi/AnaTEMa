@@ -1,0 +1,28 @@
+##TITLE=Methane, diazo-
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=334-88-3
+##$NIST MASS SPEC NO=57
+##MOLFORM=C H2 N2
+##MW=42
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=12
+##LASTX=43
+##FIRSTY=1102
+##MAXX=43
+##MINX=12
+##MAXY=9999
+##MINY=110
+##NPOINTS=12
+##PEAK TABLE=(XY..XY)
+12,1102 13,2205 14,9999 15,252
+26,126 27,583 28,1795 29,205
+40,220 41,1102 42,4252 43,110
+##END=

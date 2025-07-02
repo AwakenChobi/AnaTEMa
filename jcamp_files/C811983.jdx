@@ -1,0 +1,30 @@
+##TITLE=Methanol-D4
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=Japan AIST/NIMC Database- Spectrum MS-NW-6800
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=811-98-3
+##$NIST MASS SPEC NO=236257
+##MOLFORM=C D4 O
+##MW=36
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=12
+##LASTX=37
+##FIRSTY=70
+##MAXX=37
+##MINX=12
+##MAXY=9999
+##MINY=10
+##NPOINTS=14
+##PEAK TABLE=(XY..XY)
+12,70 14,149 16,459 18,2999
+28,679 29,10 30,5069 31,50
+32,579 33,10 34,9999 35,110
+36,7059 37,80
+##END=

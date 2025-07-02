@@ -1,0 +1,30 @@
+##TITLE=Cyclopropene
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=Chemical Concepts
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=2781-85-3
+##$NIST MASS SPEC NO=194058
+##MOLFORM=C3 H4
+##MW=40
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=24
+##LASTX=43
+##FIRSTY=212
+##MAXX=43
+##MINX=24
+##MAXY=9999
+##MINY=54
+##NPOINTS=14
+##PEAK TABLE=(XY..XY)
+24,212 25,299 26,678 27,547
+29,518 30,75 36,498 37,2768
+38,4669 39,9999 40,6863 41,1036
+42,651 43,54
+##END=
