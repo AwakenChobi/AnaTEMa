@@ -1,0 +1,8 @@
+Los masas de los flujos de 1L+ para síntesis se hicieron pasando todo el flujo por el CEM (cosa que no se hizo para OES)
+
+Análisis de material
+
+Raman
+XRD
+TGA
+Isotermas
