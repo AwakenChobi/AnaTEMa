@@ -83,7 +83,7 @@ ethylene[26] = 1.0000  # m/z=28
 ethylene[27] = 0.0230  # m/z=29
 ethylene[28] = 0.0010  # m/z=30
 
-# Diborane
+# Diborane ##NOT CONSIDERED
 diborane = [0] * 50
 diborane[8] = 0.0631  # m/z=10
 diborane[9] = 0.2843  # m/z=11
@@ -228,7 +228,7 @@ hydrogen_sulfide[32] = 1.0000  # m/z=34
 hydrogen_sulfide[33] = 0.0250  # m/z=35
 hydrogen_sulfide[34] = 0.0420  # m/z=36
 
-# Phosphine
+# Phosphine ##NOT CONSIDERED
 phosphine = [0] * 50
 phosphine[14] = 0.0050  # m/z=16
 phosphine[15] = 0.0030  # m/z=17
@@ -237,7 +237,7 @@ phosphine[30] = 0.1271  # m/z=32
 phosphine[31] = 0.3313  # m/z=33
 phosphine[32] = 1.0000  # m/z=34
 
-# Methyl fluoride
+# Methyl fluoride ##NOT CONSIDERED
 methyl_fluoride = [0] * 50
 methyl_fluoride[10] = 0.0050  # m/z=12
 methyl_fluoride[11] = 0.0120  # m/z=13
@@ -249,7 +249,7 @@ methyl_fluoride[31] = 0.8889  # m/z=33
 methyl_fluoride[32] = 1.0000  # m/z=34
 methyl_fluoride[33] = 0.0120  # m/z=35
 
-# Methan-d3-ol
+# Methan-d3-ol ##NOT CONSIDERED
 methan_d3_ol = [0] * 50
 methan_d3_ol[10] = 0.0050  # m/z=12
 methan_d3_ol[12] = 0.0110  # m/z=14
@@ -275,7 +275,7 @@ hydrogen_chloride[34] = 1.0000  # m/z=36
 hydrogen_chloride[35] = 0.0540  # m/z=37
 hydrogen_chloride[36] = 0.3243  # m/z=38
 
-# Methanol-D4
+# Methanol-D4 ##NOT CONSIDERED
 methanol_d4 = [0] * 50
 methanol_d4[10] = 0.0070  # m/z=12
 methanol_d4[12] = 0.0149  # m/z=14
@@ -581,7 +581,7 @@ nitrous_oxide[29] = 0.0010  # m/z=31
 nitrous_oxide[42] = 1.0000  # m/z=44
 nitrous_oxide[43] = 0.0070  # m/z=45
 
-# Ethyne, fluoro-
+# Ethyne, fluoro- ##NOT CONSIDERED
 ethyne__fluoro_ = [0] * 50
 ethyne__fluoro_[10] = 0.0070  # m/z=12
 ethyne__fluoro_[11] = 0.0080  # m/z=13
@@ -791,7 +791,7 @@ formic_acid[44] = 0.6096  # m/z=46
 formic_acid[45] = 0.0100  # m/z=47
 formic_acid[46] = 0.0030  # m/z=48
 
-# Ethene, fluoro-
+# Ethene, fluoro- ##NOT CONSIDERED
 ethene__fluoro_ = [0] * 50
 ethene__fluoro_[0] = 0.0050  # m/z=2
 ethene__fluoro_[10] = 0.0661  # m/z=12
@@ -816,7 +816,7 @@ ethene__fluoro_[43] = 0.7117  # m/z=45
 ethene__fluoro_[44] = 1.0000  # m/z=46
 ethene__fluoro_[45] = 0.0290  # m/z=47
 
-# Silane, methyl-
+# Silane, methyl- ##NOT CONSIDERED
 silane__methyl_ = [0] * 50
 silane__methyl_[0] = 0.0082  # m/z=2
 silane__methyl_[10] = 0.0080  # m/z=12
@@ -888,7 +888,7 @@ ethanol[43] = 0.5150  # m/z=45
 ethanol[44] = 0.2163  # m/z=46
 ethanol[45] = 0.0073  # m/z=47
 
-# Hydrazine, methyl-
+# Hydrazine, methyl- ##NOT CONSIDERED
 hydrazine__methyl_ = [0] * 50
 hydrazine__methyl_[25] = 0.0635  # m/z=27
 hydrazine__methyl_[26] = 0.7262  # m/z=28
@@ -909,7 +909,7 @@ hydrazine__methyl_[44] = 1.0000  # m/z=46
 hydrazine__methyl_[45] = 0.0269  # m/z=47
 hydrazine__methyl_[46] = 0.0008  # m/z=48
 
-# Hydroxylamine, O-methyl-
+# Hydroxylamine, O-methyl- ##NOT CONSIDERED
 hydroxylamine__o_methyl_ = [0] * 50
 hydroxylamine__o_methyl_[12] = 0.0030  # m/z=14
 hydroxylamine__o_methyl_[13] = 0.0659  # m/z=15
@@ -949,7 +949,7 @@ methanethiol[46] = 0.8999  # m/z=48
 methanethiol[47] = 0.0611  # m/z=49
 methanethiol[48] = 0.0410  # m/z=50
 
-# Phosphine, methyl-
+# Phosphine, methyl- ##NOT CONSIDERED
 phosphine__methyl_ = [0] * 50
 phosphine__methyl_[13] = 0.0200  # m/z=15
 phosphine__methyl_[29] = 0.0133  # m/z=31
@@ -961,7 +961,7 @@ phosphine__methyl_[44] = 1.0000  # m/z=46
 phosphine__methyl_[45] = 0.1666  # m/z=47
 phosphine__methyl_[46] = 0.8667  # m/z=48
 
-# Ethane, fluoro-
+# Ethane, fluoro- ##NOT CONSIDERED
 ethane__fluoro_ = [0] * 50
 ethane__fluoro_[12] = 0.0060  # m/z=14
 ethane__fluoro_[13] = 0.0060  # m/z=15
@@ -999,7 +999,7 @@ chloromethane[47] = 0.1141  # m/z=49
 chloromethane[48] = 1.0000  # m/z=50
 chloromethane[49] = 0.0380  # m/z=51
 
-# 1,3-Butadiyne
+# 1,3-Butadiyne ##NOT CONSIDERED
 _1_3_butadiyne = [0] * 50
 _1_3_butadiyne[10] = 0.0380  # m/z=12
 _1_3_butadiyne[11] = 0.0240  # m/z=13
@@ -1013,6 +1013,9 @@ _1_3_butadiyne[46] = 0.0841  # m/z=48
 _1_3_butadiyne[47] = 0.3603  # m/z=49
 _1_3_butadiyne[48] = 1.0000  # m/z=50
 _1_3_butadiyne[49] = 0.0420  # m/z=51
+
+# Propiolonitrile ##NOT CONSIDERED
+propiolonitrile = [0] * 50
 
 
 NIST_MASS_SPECTRA = {
@@ -1031,7 +1034,7 @@ NIST_MASS_SPECTRA = {
     'CO: Carbon monoxide': carbon_monoxide,
     'N2: Nitrogen': nitrogen,
     'C2H4: Ethylene': ethylene,
-    'B2H6: Diborane': diborane,
+#    'B2H6: Diborane': diborane,
     'NO: Nitric oxide': nitric_oxide,
     'HCHO: Formaldehyde': formaldehyde,
     'C2H6: Ethane': ethane,
@@ -1042,46 +1045,47 @@ NIST_MASS_SPECTRA = {
     'N2H4: Hydrazine': hydrazine,
     'H3NO: Hydroxylamine': hydroxylamine,
     'H2S: Hydrogen sulfide': hydrogen_sulfide,
-    'H3P: Phosphine': phosphine,
-    'Methyl fluoride': methyl_fluoride,
-    'Methan-d3-ol': methan_d3_ol,
-    'Hydrogen chloride': hydrogen_chloride,
-    'Methanol-D4': methanol_d4,
+#    'H3P: Phosphine': phosphine,
+#    'CH3F: Methyl fluoride': methyl_fluoride,
+#    'CHD3O: Methan-d3-ol': methan_d3_ol,
+    'ClH: Hydrogen chloride': hydrogen_chloride,
+#    'CD4O: Methanol-D4': methanol_d4,
     'Ar: Argon': argon,
-    'Cyclopropene': cyclopropene,
-    'Allene': allene,
-    'Propyne': propyne,
-    'Methyl isocyanide': methyl_isocyanide,
-    'Acetonitrile': acetonitrile,
-    'Ketene': ketene,
-    'Methane, diazo-': methane__diazo_,
-    'Cyabamide': cyanamide,
-    'Borane carbonyl': borane_carbonyl,
-    'Propene': propene,
-    'Cyclopropane': cyclopropane,
-    'Hydrogen azide': hydrogen_azide,
-    'Ethylenimine': ethylenimine,
-    'Carbon dioxide': carbon_dioxide,
-    'Nitrous oxide': nitrous_oxide,
-    'Ethyne, fluoro-': ethyne__fluoro_,
-    'Acetaldehyde': acetaldehyde,
-    'Ethylene oxide': ethylene_oxide,
-    'Propane': propane,
-    'Formamide': formamide,
-    'Methane, nitroso-': methane__nitroso_,
-    'Dimethylamine': dimethylamine,
-    'Ethylamine': ethylamine,
-    'Nitrogen dioxide': nitrogen_dioxide,
-    'Formic acid': formic_acid,
-    'Ethene, fluoro-': ethene__fluoro_,
-    'Silane, methyl-': silane__methyl_,
-    'Dimethyl ether': dimethyl_ether,
-    'Ethanol': ethanol,
-    'Hydrazine, methyl-': hydrazine__methyl_,
-    'Hydroxylamine, O-methyl-': hydroxylamine__o_methyl_,
-    'Methanethiol': methanethiol,
-    'Phosphine, methyl-': phosphine__methyl_,
-    'Ethane, fluoro-': ethane__fluoro_,
-    'Chloromethane': chloromethane,
-    '1,3-Butadiyne': _1_3_butadiyne
+    'C3H4: Cyclopropene': cyclopropene,
+    'C3H4: Allene': allene,
+    'C3H4: Propyne': propyne,
+    'C3H3N: Methyl isocyanide': methyl_isocyanide,
+    'C2H3N: Acetonitrile': acetonitrile,
+    'C2H2O: Ketene': ketene,
+    'CH2N2: Methane, diazo-': methane__diazo_,
+    'CH2N2: Cyanamide': cyanamide,
+    'CH3BO: Borane carbonyl': borane_carbonyl,
+    'C3H6: Propene': propene,
+    'C3H6: Cyclopropane': cyclopropane,
+    'HN3: Hydrogen azide': hydrogen_azide,
+    'C2H5N: Ethylenimine': ethylenimine,
+    'CO2: Carbon dioxide': carbon_dioxide,
+    'N2O: Nitrous oxide': nitrous_oxide,
+#    'C2HF: Ethyne, fluoro-': ethyne__fluoro_,
+    'C2H4O: Acetaldehyde': acetaldehyde,
+    'C2H4O: Ethylene oxide': ethylene_oxide,
+    'C3H8: Propane': propane,
+    'CH3NO: Formamide': formamide,
+    'CH3NO: Methane, nitroso-': methane__nitroso_,
+    'C2H7N: Dimethylamine': dimethylamine,
+    'C2H7N: Ethylamine': ethylamine,
+    'NO2: Nitrogen dioxide': nitrogen_dioxide,
+    'HCOOH: Formic acid': formic_acid,
+#    'C2H3F: Ethene, fluoro-': ethene__fluoro_,
+#    'CH6Si: Silane, methyl-': silane__methyl_,
+    'C2H6O: Dimethyl ether': dimethyl_ether,
+    'C2H5OH: Ethanol': ethanol,
+#    'C2H6N2: Hydrazine, methyl-': hydrazine__methyl_,
+#    'C2H5NO: Hydroxylamine, O-methyl-': hydroxylamine__o_methyl_,
+    'C2H4S: Methanethiol': methanethiol,
+#    'CH5P: Phosphine, methyl-': phosphine__methyl_,
+#    'C2H5F: Ethane, fluoro-': ethane__fluoro_,
+    'CH3Cl: Chloromethane': chloromethane,
+#    'C4H2: 1,3-Butadiyne': _1_3_butadiyne,
+#    'C3HN: Propiolonitrile': propiolonitrile
 }
