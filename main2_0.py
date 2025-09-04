@@ -7,15 +7,64 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.ticker import MaxNLocator
 from pathlib import Path
 from mass_spectra_database import NIST_MASS_SPECTRA
-from solver import lu_solver_mass_spectra
+from solver import lu_solver_mass_spectra_etanol
 from continuum_to_bar_spectra import continuum_to_bar_spectra
 from datetime import datetime
+
+################################################################################
+###############################------META STRUCTURE------#######################
+#meta = {
+#    "general": {
+#        "software_id": int,
+#        "software_version": str,
+#        "measure_uts": float,   # Unix timestamp of the measurement (start)
+#        "author": str,
+#        "n_cycles": int,        # Number of cycles
+#        "n_scans": int
+#    },
+#    "cycles": [
+#        [   # List of cycles, one entry per cycle
+#            {
+#                "uts": float,           # Unix timestamp for this cycle
+#                "comment": str,         # Comment (may contain binary or null chars)
+#                "data_format": int,
+#                "fsr": float,
+#                "scan_unit": str,
+#                "data_unit": str
+#                # ... possibly more keys ...
+#            }
+#        ],
+#        # ... repeat for each cycle ...
+#    ]
+#}
+
+
+################################################################################
 
 
 def plot_gui(cycles, meta):
     root = tk.Tk()
     root.title("Mass Spectra Viewer")
     root.state('zoomed')
+
+    def open_new_sac():
+        file_path = filedialog.askopenfilename(
+            title="Select a .sac file",
+            filetypes=[("SAC files", "*.sac")]
+        )
+        if file_path:
+            new_cycles, new_meta = qsf.process(Path(file_path))
+            root.destroy()
+            plot_gui(new_cycles, new_meta)
+
+    # Add menu for opening new .sac file
+    menubar = tk.Menu(root)
+    filemenu = tk.Menu(menubar, tearoff=0)
+    filemenu.add_command(label="Open .sac file", command=open_new_sac)
+    filemenu.add_separator()
+    filemenu.add_command(label="Exit", command=root.quit)
+    menubar.add_cascade(label="File", menu=filemenu)
+    root.config(menu=menubar)
 
     notebook = ttk.Notebook(root)
     notebook.pack(fill=tk.BOTH, expand=1)
@@ -359,7 +408,7 @@ def plot_gui(cycles, meta):
         y = cycle['Ion Current']
         # Solve for molecule intensities
         _, _, normalized_y_bars = continuum_to_bar_spectra(x, y, NIST_MASS_SPECTRA)
-        result = lu_solver_mass_spectra(normalized_y_bars, NIST_MASS_SPECTRA)
+        result = lu_solver_mass_spectra_etanol(normalized_y_bars, NIST_MASS_SPECTRA)
         intensities[:, idx] = [result[name] for name in molecule_names]
 
     # Plot molecule evolution
