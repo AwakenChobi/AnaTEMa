@@ -17,9 +17,6 @@ def lu_solver_mass_spectra_etanol(normalized_bar_spectra, NIST_MASS_SPECTRA):
     # Extract molecule names, excluding 'Mass/Charge peaks'
     molecules = [key for key in NIST_MASS_SPECTRA.keys() if key != 'Mass/Charge peaks']
 
-    # Zero_intensities for this computation
-    zero_intensities = set()
-
     
     # Build the coefficient matrix A
     # Each column corresponds to a molecule, and each row corresponds to a mass/charge peak
