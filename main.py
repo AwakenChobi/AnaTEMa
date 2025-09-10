@@ -221,8 +221,11 @@ def plot(cycles):
     cycle_count_label = ttk.Label(control_frame, text=f"Cycles loaded: {len(cycles)}")
     cycle_count_label.pack(side=tk.LEFT, padx=10)
 
-    dt_local = datetime.fromtimestamp(meta["cycles"][current_cycle.get()][0]['uts']).astimezone()
-    datetime_label = ttk.Label(control_frame, text=f"date/time: {dt_local.isoformat()}")
+    if len(meta["cycles"]) < current_cycle.get() + 1:
+        dt_local = 'N/A'
+    else:
+        dt_local = datetime.fromtimestamp(meta["cycles"][current_cycle.get()][0]['uts']).astimezone()
+    datetime_label = ttk.Label(control_frame, text=f"date/time: {dt_local}")
     datetime_label.pack(side=tk.LEFT, padx=10)
 
     # Entry for cycle number
