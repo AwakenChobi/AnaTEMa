@@ -2,6 +2,7 @@ import numpy as np
 import quadstarfiles as qsf
 import matplotlib.pyplot as plt
 import tkinter as tk
+import itertools
 from tkinter import ttk, filedialog, messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.ticker import MaxNLocator
@@ -109,13 +110,17 @@ def plot_gui(cycles, meta):
     frame_mol = ttk.Frame(notebook)
     notebook.add(frame_mol, text="Molecule Evolution")
 
+
+    control_frame3 = ttk.Frame(frame_mol)
+    control_frame3.pack(side=tk.BOTTOM, fill=tk.X)
+
     fig3 = plt.Figure(figsize=(16, 8))
     ax3 = fig3.add_subplot(111)
     canvas3 = FigureCanvasTkAgg(fig3, master=frame_mol)
-    canvas3.get_tk_widget().pack(fill=tk.BOTH, expand=1)
     toolbar3 = NavigationToolbar2Tk(canvas3, frame_mol)
     toolbar3.update()
-    canvas3.get_tk_widget().pack(fill=tk.BOTH, expand=1)
+    toolbar3.pack(side=tk.BOTTOM, fill=tk.X)
+    canvas3.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=1)
 
     # --- Functions for Tab 1 (Continuum) ---
     def plot_2d(ax, cycles, cycle_idx):
@@ -155,30 +160,40 @@ def plot_gui(cycles, meta):
 
     def update_plot1():
         nonlocal canvas1, toolbar1, fig1, ax1
-        # Destroy the old canvas and toolbar if they exist (if this is not done, new cycles will appear all messed up)
-        if hasattr(canvas1, 'get_tk_widget'):
-            canvas1.get_tk_widget().destroy()
-            update_datetime_label1()
-        if toolbar1 is not None:
-            toolbar1.destroy()
-            update_datetime_label1()
 
-        # New canvas and toolbar
+        # Destroy the old canvas and toolbar if they exist (if this is not done, new cycles will appear all messed up)
+        # if hasattr(canvas1, 'get_tk_widget'):
+        #     canvas1.get_tk_widget().destroy()
+        #     update_datetime_label1()
+        # if toolbar1 is not None:
+        #     toolbar1.destroy()
+        #     update_datetime_label1()
+
+        # # New canvas and toolbar
+        # if mode.get() == "2D":
+        #     fig1 = plt.Figure(figsize=(15, 5))
+        #     ax1 = fig1.add_subplot(111)
+        #     plot_2d(ax1, cycles, current_cycle.get())
+        # else:
+        #     fig1 = plt.Figure(figsize=(17, 10))
+        #     ax1 = fig1.add_subplot(111, projection='3d')
+        #     plot_3d(ax1, cycles)
+
         if mode.get() == "2D":
-            fig1 = plt.Figure(figsize=(15, 5))
-            ax1 = fig1.add_subplot(111)
+            ax1.clear()
             plot_2d(ax1, cycles, current_cycle.get())
         else:
-            fig1 = plt.Figure(figsize=(17, 10))
-            ax1 = fig1.add_subplot(111, projection='3d')
+            ax1.clear()
             plot_3d(ax1, cycles)
-
-        canvas1 = FigureCanvasTkAgg(fig1, master=root)
-        canvas1.get_tk_widget().pack(fill=tk.BOTH, expand=1)
-        toolbar1 = NavigationToolbar2Tk(canvas1, root)
-        toolbar1.update()
-        canvas1.get_tk_widget().pack(fill=tk.BOTH, expand=1)
         canvas1.draw()
+        update_datetime_label1()
+
+        # canvas1 = FigureCanvasTkAgg(fig1, master=root)
+        # canvas1.get_tk_widget().pack(fill=tk.BOTH, expand=1)
+        # toolbar1 = NavigationToolbar2Tk(canvas1, root)
+        # toolbar1.update()
+        # canvas1.get_tk_widget().pack(fill=tk.BOTH, expand=1)
+        # canvas1.draw()
 
     def next_cycle1():
         if current_cycle.get() < len(cycles) - 1:
@@ -190,14 +205,14 @@ def plot_gui(cycles, meta):
             current_cycle.set(current_cycle.get() - 1)
             update_plot1()
 
-    def switch_mode1():
-        if mode.get() == "2D":
-            mode.set("3D")
-            cycle_frame1.pack_forget()
-        else:
-            mode.set("2D")
-            cycle_frame1.pack(side=tk.TOP, fill=tk.X)
-        update_plot1()
+    # def switch_mode1():
+    #     if mode.get() == "2D":
+    #         mode.set("3D")
+    #         cycle_frame1.pack_forget()
+    #     else:
+    #         mode.set("2D")
+    #         cycle_frame1.pack(side=tk.TOP, fill=tk.X)
+    #     update_plot1()
 
     def go_to_cycle1():
         try:
@@ -261,8 +276,8 @@ def plot_gui(cycles, meta):
             messagebox.showerror("Error", f"Invalid input or error: {e}")
 
     # Controls for Tab 1
-    switch_btn1 = ttk.Button(control_frame1, text="Switch 2D/3D", command=switch_mode1)
-    switch_btn1.pack(side=tk.LEFT, padx=5, pady=5)
+#    switch_btn1 = ttk.Button(control_frame1, text="Switch 2D/3D", command=switch_mode1)
+#    switch_btn1.pack(side=tk.LEFT, padx=5, pady=5)
 
     cycle_frame1 = ttk.Frame(control_frame1)
     cycle_frame1.pack(side=tk.LEFT, padx=5, pady=5)
@@ -308,9 +323,10 @@ def plot_gui(cycles, meta):
         y = cycle['Ion Current']
         # Use your function to get bar spectra
         x_bars, y_bars, norm_y_bars = continuum_to_bar_spectra(x, y, NIST_MASS_SPECTRA)
-        ax.bar(x_bars, y_bars, width=1)
+        ax.bar(x_bars, y_bars, width=0.5)
         ax.set_xlabel('Mass/Charge')
-        ax.set_ylabel('Intensity')
+        ax.set_ylabel('Ion current (log scale)')
+        ax.set_yscale('log')
         ax.set_title(f'Bar Spectrum (Cycle {cycle_idx+1})')
         ax.grid(True, which="both", ls="--")
 
@@ -323,11 +339,12 @@ def plot_gui(cycles, meta):
     def save_current_cycle2():
         idx = current_cycle_bar.get()
         cycle = cycles[idx][0]
+        x_bars, y_bars, norm_y_bars = continuum_to_bar_spectra(cycle['Mass'], cycle['Ion Current'], NIST_MASS_SPECTRA)
         file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
         if file_path:
             with open(file_path, "w") as f:
                 f.write("Mass\tIon Current\tNormalized\n")
-                for m, ic, nc in zip(continuum_to_bar_spectra(cycle['Mass'], cycle['Ion Current'], NIST_MASS_SPECTRA)):
+                for m, ic, nc in zip(x_bars, y_bars, norm_y_bars):
                     f.write(f"{m}\t{ic}\t{nc}\n")
 
     def save_all_cycles2():
@@ -393,7 +410,6 @@ def plot_gui(cycles, meta):
     save_all_btn2 = ttk.Button(control_frame2, text="Save All Cycles", command=save_all_cycles2)
     save_all_btn2.pack(side=tk.LEFT, padx=5)
 
-
     update_plot2()
 
     # --- Tab 3: Molecule Evolution ---
@@ -406,21 +422,49 @@ def plot_gui(cycles, meta):
         cycle = cycle_list[0]
         x = cycle['Mass']
         y = cycle['Ion Current']
-        # Solve for molecule intensities
         _, _, normalized_y_bars = continuum_to_bar_spectra(x, y, NIST_MASS_SPECTRA)
         result = lu_solver_mass_spectra_etanol(normalized_y_bars, NIST_MASS_SPECTRA)
         intensities[:, idx] = [result[name] for name in molecule_names]
 
-    # Plot molecule evolution
-    colors = plt.cm.get_cmap('tab20', len(molecule_names))
+    plot_indices = [i for i in range(len(molecule_names)) if np.any(intensities[i, :] > 1e-6)]
+    plot_names = [molecule_names[i] for i in plot_indices]
+    num_lines = len(plot_indices)
+    color_map = plt.cm.get_cmap('tab20', num_lines)
+    style_list = ['-', '--', '-.', ':']
+
+    combinations = list(itertools.product(range(num_lines), style_list))
     ax3.clear()
-    for i, name in enumerate(molecule_names):
-        ax3.plot(range(1, n_cycles+1), intensities[i, :], label=name, color=colors(i))
+    for idx, (i, name) in enumerate(zip(plot_indices, plot_names)):
+        color_idx, style = combinations[idx % len(combinations)]
+        color = color_map(color_idx)
+        ax3.plot(
+            range(1, n_cycles+1),
+            intensities[i, :],
+            label=name,
+            color=color,
+            linestyle=style,
+            linewidth=2
+        )
+    
+    def save_molecule_evolution():
+        file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
+        if file_path:
+            with open(file_path, "w") as f:
+                f.write("Molecule\t" + "\t".join(f"Cycle_{i+1}" for i in range(n_cycles)) + "\n")
+                for i, name in enumerate(molecule_names):
+                    row = [name] + [str(intensities[i, j]) for j in range(n_cycles)]
+                    f.write("\t".join(row) + "\n")
+
     ax3.set_xlabel('Cycle')
     ax3.set_ylabel('Intensity')
+    ax3.set_yscale('log')
     ax3.set_title('Molecule Evolution')
     ax3.legend(loc='upper right', bbox_to_anchor=(1.15, 1.0), fontsize='small', ncol=1)
     ax3.grid(True)
+
+    save_evolution_btn = ttk.Button(control_frame3, text="Save Molecule Evolution Data", command=save_molecule_evolution)
+    save_evolution_btn.pack(side=tk.TOP, padx=5, pady=5)
+
     canvas3.draw()
 
     root.mainloop()

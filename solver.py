@@ -1,5 +1,7 @@
+from unittest import result
 import numpy as np
-from scipy.linalg import lu_factor, lu_solve
+# from scipy.linalg import lu_factor, lu_solve #LU method does not seem to be suitable for this task
+from scipy.optimize import nnls
 
 def lu_solver_mass_spectra_etanol(normalized_bar_spectra, NIST_MASS_SPECTRA):
     #normalized_bar_spectra should be a (monodimentional) numpy array ordered by the mass/charge peaks
@@ -23,6 +25,7 @@ def lu_solver_mass_spectra_etanol(normalized_bar_spectra, NIST_MASS_SPECTRA):
     # A transposition is done since list in python are stored in rows.
     A_list = []
     for mol in molecules:
+        print(f"DEBUG: {mol} spectrum length = {len(NIST_MASS_SPECTRA[mol])}, Mass/Charge peaks length = {len(NIST_MASS_SPECTRA['Mass/Charge peaks'])}")
         if mol in zero_intensities:
             # If the molecule is in zero_intensities, we set its spectrum to zero
             spectrum = np.zeros(len(NIST_MASS_SPECTRA['Mass/Charge peaks']))
@@ -58,9 +61,15 @@ def lu_solver_mass_spectra_etanol(normalized_bar_spectra, NIST_MASS_SPECTRA):
     #    result[mol] = x[i]
 
     ########################################### PLACEHOLDER FOR THE RESULT ###########################################
+    
+    x, residual = nnls(A, b)
+
     result = {}
+
     for i, mol in enumerate(molecules):
-        result[mol] = np.zeros(len(NIST_MASS_SPECTRA['Mass/Charge peaks']), dtype=int)
+        result.update({mol: x[i]})
+
+    print("NNLS residues:", residual)
 
     print("Resulting coefficients:")
     print("Resulting intensities:", result)

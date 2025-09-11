@@ -1019,7 +1019,7 @@ propiolonitrile = [0] * 50
 
 
 NIST_MASS_SPECTRA = {
-    'Mass/Charge peaks': [i + 2 for i in range(49)],
+    'Mass/Charge peaks': [i + 2 for i in range(50)],
     'H2: Hydrogen': hydrogen,
     'D2: Deuterium': deuterium,
     'CH4: Methane': methane,

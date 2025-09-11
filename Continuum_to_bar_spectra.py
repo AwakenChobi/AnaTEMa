@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 def continuum_to_bar_spectra(x,y,database):
     #substract background
@@ -40,8 +41,6 @@ def continuum_to_bar_spectra(x,y,database):
     y_bars = []
     x_bars = database['Mass/Charge peaks']
 
-    # Check if the database has the size of the spectra
-
     for i in database['Mass/Charge peaks']: # database should have the format of the variable stored in mass_spectra_database.py
         mask = (x > i-0.08) & (x < i+0.08)  # boolean mask with x values
         if np.any(mask) and np.max(y_corrected[mask]) > (0*10**-13): #adjust the threshold (it is better to keep it low otherwise it could cause problems solving the system)
@@ -49,14 +48,22 @@ def continuum_to_bar_spectra(x,y,database):
         else:
             y_bars.append(0)
             
-    # Normalize the y_bars values
     print("Max value of y_bars before normalization:", np.max(y_bars))
     if np.max(y_bars) > 0:
-        normalized_y_bars = y_bars / np.max(y_bars)
+        normalized_y_bars = y_bars / np.max(y_bars) # Normalization
     else:
         normalized_y_bars = y_bars
 
-    # Ensure x_bars is a numpy array
+    # plt.figure()
+    # plt.plot(x, y, label='Original Spectrum')
+    # plt.plot(x, background, label='Background', linestyle='--')
+    # plt.xlabel('Mass/Charge')
+    # plt.ylabel('Intensity')
+    # plt.yscale('log')
+    # plt.title('Background Subtraction')
+    # plt.legend()
+    # plt.show()
+
     x_bars = np.array(x_bars)
 
     return x_bars, y_bars, normalized_y_bars
