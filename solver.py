@@ -3,7 +3,7 @@ import numpy as np
 # from scipy.linalg import lu_factor, lu_solve #LU method does not seem to be suitable for this task
 from scipy.optimize import nnls
 
-def lu_solver_mass_spectra_etanol(normalized_bar_spectra, NIST_MASS_SPECTRA):
+def NNLS_solver_mass_spectra_etanol(normalized_bar_spectra, NIST_MASS_SPECTRA):
     #normalized_bar_spectra should be a (monodimentional) numpy array ordered by the mass/charge peaks
     # NIST_MASS_SPECTRA should be a dictionary with the format of the variable
 

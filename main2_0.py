@@ -7,13 +7,13 @@ from tkinter import ttk, filedialog, messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.ticker import MaxNLocator
 from pathlib import Path
-from mass_spectra_database import NIST_MASS_SPECTRA
-from solver import lu_solver_mass_spectra_etanol
-from continuum_to_bar_spectra import continuum_to_bar_spectra
+from mass_spectra_database import NIST_MASS_SPECTRA # Database in this folder
+from solver import NNLS_solver_mass_spectra_etanol ## Function in this folder
+from continuum_to_bar_spectra import continuum_to_bar_spectra #Function in this folder
 from datetime import datetime
 
-################################################################################
-###############################------META STRUCTURE------#######################
+########################################################################
+#######################------META STRUCTURE------#######################
 #meta = {
 #    "general": {
 #        "software_id": int,
@@ -40,7 +40,7 @@ from datetime import datetime
 #}
 
 
-################################################################################
+#######################################################################
 
 
 def plot_gui(cycles, meta):
@@ -161,7 +161,6 @@ def plot_gui(cycles, meta):
     def update_plot1():
         nonlocal canvas1, toolbar1, fig1, ax1
 
-        # Destroy the old canvas and toolbar if they exist (if this is not done, new cycles will appear all messed up)
         # if hasattr(canvas1, 'get_tk_widget'):
         #     canvas1.get_tk_widget().destroy()
         #     update_datetime_label1()
@@ -169,7 +168,6 @@ def plot_gui(cycles, meta):
         #     toolbar1.destroy()
         #     update_datetime_label1()
 
-        # # New canvas and toolbar
         # if mode.get() == "2D":
         #     fig1 = plt.Figure(figsize=(15, 5))
         #     ax1 = fig1.add_subplot(111)
@@ -243,8 +241,7 @@ def plot_gui(cycles, meta):
             n_cycles = len(cycles)
             # Collect all ion currents
             ion_currents = [cycles[i][0]['Ion Current'] for i in range(n_cycles)]
-            # Write header
-            with open(file_path, "w") as f: #w = writing mode
+            with open(file_path, "w") as f:
                 header = "Mass\t" + "\t".join(str(i+1) for i in range(n_cycles)) + "\n"
                 f.write(header)
                 for i, m in enumerate(mass):
@@ -321,7 +318,6 @@ def plot_gui(cycles, meta):
         cycle = cycles[cycle_idx][0]
         x = cycle['Mass']
         y = cycle['Ion Current']
-        # Use your function to get bar spectra
         x_bars, y_bars, norm_y_bars = continuum_to_bar_spectra(x, y, NIST_MASS_SPECTRA)
         ax.bar(x_bars, y_bars, width=0.5)
         ax.set_xlabel('Mass/Charge')
@@ -353,9 +349,7 @@ def plot_gui(cycles, meta):
             # Assume all cycles have the same Mass axis
             mass = NIST_MASS_SPECTRA['Mass']
             n_cycles = len(cycles)
-            # Collect all ion currents
             ion_currents = [cycles[i][0]['Ion Current'] for i in range(n_cycles)]
-            # Write header
             with open(file_path, "w") as f:
                 header = "Mass\t" + "\t".join(str(i+1) for i in range(n_cycles)) + "\n"
                 f.write(header)
@@ -423,10 +417,10 @@ def plot_gui(cycles, meta):
         x = cycle['Mass']
         y = cycle['Ion Current']
         _, _, normalized_y_bars = continuum_to_bar_spectra(x, y, NIST_MASS_SPECTRA)
-        result = lu_solver_mass_spectra_etanol(normalized_y_bars, NIST_MASS_SPECTRA)
+        result = NNLS_solver_mass_spectra_etanol(normalized_y_bars, NIST_MASS_SPECTRA)
         intensities[:, idx] = [result[name] for name in molecule_names]
 
-    plot_indices = [i for i in range(len(molecule_names)) if np.any(intensities[i, :] > 1e-6)]
+    plot_indices = [i for i in range(len(molecule_names)) if np.any(intensities[i, :] > 1e-7)]
     plot_names = [molecule_names[i] for i in plot_indices]
     num_lines = len(plot_indices)
     color_map = plt.cm.get_cmap('tab20', num_lines)

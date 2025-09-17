@@ -1026,7 +1026,7 @@ NIST_MASS_SPECTRA = {
     'H3N: Ammonia': ammonia,
     'H2O: Water': water,
     'C2H2: Acetylene': acetylene,
-#    'HCN: Hydrogen cyanide': hydrogen_cyanide,
+    'HCN: Hydrogen cyanide': hydrogen_cyanide,
     'CO: Carbon monoxide': carbon_monoxide,
     'N2: Nitrogen': nitrogen,
     'C2H4: Ethylene': ethylene,
