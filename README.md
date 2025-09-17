@@ -142,10 +142,20 @@ python main2_0.py
  
 ## Credits
 
-Developed by Antonio Cobos Luque.
+Developed by Antonio Cobos Luque (Universidad de Córdoba).
+
 Uses NIST mass spectra data and standard Python scientific libraries.
 
+Collaborators:
+- Alexhall: mentoring
+- Rocío Pérez: testing
+
+**Cite as:** Cobos-Luque, A., AnaTEMa (2025). https://github.com/AwakenChobi/AnaTEMa
+
+**Or**: Download cite.bib and add it to your text editor.
+
 ---
+
 
 ## License
 
