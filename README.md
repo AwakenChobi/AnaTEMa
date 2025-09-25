@@ -139,8 +139,6 @@ python main2_0.py
 - **Adapt algorithm to different length input data:** The NIST database should be increased and the code should adapt the range of molecules that is used (right now, molecules with main peak above 52 a.m.u will not be considered).
 
 - **Include 3D plot in main2_0.py:** Right now, the most complete version of the code is the 2_0 version, included in this folder. However, for technical issues, 3D plot is not available in this version but it is in main.py. At some point, this functionality should be merged to the latest version.
-
-- **Add .txt spectra compatibility:** Right now, only .sac spectra can be read, but other extension are considered to be compatible with AnaTEMa in the future.
  
 ## Credits
 

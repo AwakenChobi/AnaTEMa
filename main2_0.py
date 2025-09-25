@@ -11,6 +11,129 @@ from mass_spectra_database import NIST_MASS_SPECTRA # Database in this folder
 from solver import NNLS_solver_mass_spectra_etanol ## Function in this folder
 from continuum_to_bar_spectra import continuum_to_bar_spectra #Function in this folder
 from datetime import datetime
+import threading
+import time
+
+def show_loading_window():
+    """Create and show loading window with progress bar"""
+    loading_window = tk.Toplevel()
+    loading_window.title("Loading AnaTEMa")
+    loading_window.geometry("400x100")
+    loading_window.resizable(False, False)
+    
+    # Center the window
+    loading_window.update_idletasks()
+    x = (loading_window.winfo_screenwidth() // 2) - (400 // 2)
+    y = (loading_window.winfo_screenheight() // 2) - (100 // 2)
+    loading_window.geometry(f"400x100+{x}+{y}")
+    
+    loading_label = ttk.Label(loading_window, text="Loading mass spectra data...")
+    loading_label.pack(pady=10)
+    
+    progress = ttk.Progressbar(loading_window, mode='indeterminate', length=300)
+    progress.pack(pady=10)
+    progress.start(10)
+    
+    return loading_window, progress
+
+def process_file_with_loading(file_path, root):
+    """Process file and show loading bar"""
+    loading_window, progress = show_loading_window()
+    
+    def process_in_thread():
+        try:
+            if file_path.lower().endswith('.sac'):
+                # Process SAC file
+                cycles, meta = qsf.process(Path(file_path))
+            elif file_path.lower().endswith('.txt'):
+                # Process TXT file
+                cycles, meta = process_txt_file(file_path)
+            else:
+                raise ValueError("Unsupported file format")
+            
+            # Close loading window and start main GUI
+            def success_callback():
+                progress.stop()
+                loading_window.destroy()
+                root.destroy()
+                plot_gui(cycles, meta)
+            
+            loading_window.after(0, success_callback)
+            
+        except Exception as e:
+            # Capture the error message
+            error_msg = str(e)
+            
+            def error_callback():
+                progress.stop()
+                loading_window.destroy()
+                messagebox.showerror("Error", f"Failed to load file: {error_msg}")
+                root.destroy()
+            
+            loading_window.after(0, error_callback)
+    
+    # Start processing in separate thread
+    thread = threading.Thread(target=process_in_thread)
+    thread.daemon = True
+    thread.start()
+    
+    return loading_window
+
+def process_txt_file(file_path):
+    """
+    Process .txt file with format:
+    - First row (ignoring first element): cycle numbers
+    - First column (ignoring first element): x coordinates (mass values)
+    - Rest: intensities for each x value in respective cycle
+    """
+    # Load data skipping the first row (header row)
+    data = np.loadtxt(file_path, delimiter='\t', skiprows=1)
+    
+    # Extract mass values (first column, all data since we already skipped header)
+    mass_values = data[:, 0]
+    
+    # Extract intensities (all columns except first)
+    intensities = data[:, 1:]
+    
+    # Number of cycles
+    n_cycles = intensities.shape[1]
+    
+    # Create cycles structure compatible with the existing code
+    cycles = []
+    for cycle_idx in range(n_cycles):
+        cycle_data = {
+            'Mass': mass_values,
+            'Ion Current': intensities[:, cycle_idx],
+            'uts': datetime.now().timestamp() + cycle_idx  # Fake timestamp
+        }
+        cycles.append([cycle_data])  # Wrap in list to match expected structure
+    
+    # Create metadata structure
+    meta = {
+        "general": {
+            "software_id": -1,
+            "software_version": "TXT Import",
+            "measure_uts": datetime.now().timestamp(),
+            "author": "N/A",
+            "n_cycles": n_cycles,
+            "n_scans": len(mass_values)
+        },
+        "cycles": []
+    }
+    
+    # Create cycle metadata
+    for cycle_idx in range(n_cycles):
+        cycle_meta = [{
+            "uts": datetime.now().timestamp() + cycle_idx,
+            "comment": f"Imported from TXT file - Cycle {cycle_idx + 1}",
+            "data_format": -1,
+            "fsr": -1,
+            "scan_unit": "m/z",
+            "data_unit": "Ion Current"
+        }]
+        meta["cycles"].append(cycle_meta)
+    
+    return cycles, meta
 
 ########################################################################
 #######################------META STRUCTURE------#######################
@@ -50,18 +173,21 @@ def plot_gui(cycles, meta):
 
     def open_new_sac():
         file_path = filedialog.askopenfilename(
-            title="Select a .sac file",
-            filetypes=[("SAC files", "*.sac")]
+            title="Select a .sac or .txt file",
+            filetypes=[("SAC files", "*.sac"), ("Text files", "*.txt"), ("All files", "*.*")]
         )
         if file_path:
-            new_cycles, new_meta = qsf.process(Path(file_path))
-            root.destroy()
-            plot_gui(new_cycles, new_meta)
+            if file_path.lower().endswith('.sac') or file_path.lower().endswith('.txt'):
+                # Show loading bar for new file
+                process_file_with_loading(file_path, root)
+            else:
+                messagebox.showerror("Error", "Please select a valid .sac or .txt file.")
+                return
 
-    # Add menu for opening new .sac file
+    # Add menu for opening new file
     menubar = tk.Menu(root)
     filemenu = tk.Menu(menubar, tearoff=0)
-    filemenu.add_command(label="Open .sac file", command=open_new_sac)
+    filemenu.add_command(label="Open file (.sac/.txt)", command=open_new_sac)
     filemenu.add_separator()
     filemenu.add_command(label="Exit", command=root.quit)
     menubar.add_cascade(label="File", menu=filemenu)
@@ -110,7 +236,6 @@ def plot_gui(cycles, meta):
     frame_mol = ttk.Frame(notebook)
     notebook.add(frame_mol, text="Molecule Evolution")
 
-
     control_frame3 = ttk.Frame(frame_mol)
     control_frame3.pack(side=tk.BOTTOM, fill=tk.X)
 
@@ -125,11 +250,10 @@ def plot_gui(cycles, meta):
     # --- Functions for Tab 1 (Continuum) ---
     def plot_2d(ax, cycles, cycle_idx):
         ax.clear()
-        #cycles[nº_of_cycle][0: mandatory, since the data structure is [dictionary], so this cero get rid of the list]
         cycle = cycles[cycle_idx][0]
         x = cycle['Mass']
         y = cycle['Ion Current']
-        ax.plot(x, y) #One could change the marker style here, e.g. 'o' for circles, 's' for squares, etc.
+        ax.plot(x, y)
         ax.set_xlabel('Mass')
         ax.set_ylabel('Ion current (log scale)')
         ax.set_yscale('log')
@@ -138,7 +262,7 @@ def plot_gui(cycles, meta):
 
     def plot_3d(ax, cycles):
         ax.clear()
-        ax.set_box_aspect([2, 2, 1])  # Aspect ratio, the figure still looks a little small
+        ax.set_box_aspect([2, 2, 1])
         ax.set_xlabel('Mass')
         ax.set_ylabel('Cycle')
         ax.set_zlabel('Ion current (log scale)')
@@ -149,7 +273,7 @@ def plot_gui(cycles, meta):
         for idx, cycle_list in enumerate(cycles):
             cycle = cycle_list[0]
             x = cycle['Mass']
-            y = [idx] * len(x)  # y is the cycle index, repeated for each point
+            y = [idx] * len(x)
             z = cycle['Ion Current']
             ax.plot(x, y, np.log10(z), color='blue')
 
@@ -159,24 +283,6 @@ def plot_gui(cycles, meta):
         datetime_label1.config(text=f"date/time: {dt_local.isoformat()}")
 
     def update_plot1():
-        nonlocal canvas1, toolbar1, fig1, ax1
-
-        # if hasattr(canvas1, 'get_tk_widget'):
-        #     canvas1.get_tk_widget().destroy()
-        #     update_datetime_label1()
-        # if toolbar1 is not None:
-        #     toolbar1.destroy()
-        #     update_datetime_label1()
-
-        # if mode.get() == "2D":
-        #     fig1 = plt.Figure(figsize=(15, 5))
-        #     ax1 = fig1.add_subplot(111)
-        #     plot_2d(ax1, cycles, current_cycle.get())
-        # else:
-        #     fig1 = plt.Figure(figsize=(17, 10))
-        #     ax1 = fig1.add_subplot(111, projection='3d')
-        #     plot_3d(ax1, cycles)
-
         if mode.get() == "2D":
             ax1.clear()
             plot_2d(ax1, cycles, current_cycle.get())
@@ -185,13 +291,6 @@ def plot_gui(cycles, meta):
             plot_3d(ax1, cycles)
         canvas1.draw()
         update_datetime_label1()
-
-        # canvas1 = FigureCanvasTkAgg(fig1, master=root)
-        # canvas1.get_tk_widget().pack(fill=tk.BOTH, expand=1)
-        # toolbar1 = NavigationToolbar2Tk(canvas1, root)
-        # toolbar1.update()
-        # canvas1.get_tk_widget().pack(fill=tk.BOTH, expand=1)
-        # canvas1.draw()
 
     def next_cycle1():
         if current_cycle.get() < len(cycles) - 1:
@@ -202,15 +301,6 @@ def plot_gui(cycles, meta):
         if current_cycle.get() > 0:
             current_cycle.set(current_cycle.get() - 1)
             update_plot1()
-
-    # def switch_mode1():
-    #     if mode.get() == "2D":
-    #         mode.set("3D")
-    #         cycle_frame1.pack_forget()
-    #     else:
-    #         mode.set("2D")
-    #         cycle_frame1.pack(side=tk.TOP, fill=tk.X)
-    #     update_plot1()
 
     def go_to_cycle1():
         try:
@@ -236,10 +326,8 @@ def plot_gui(cycles, meta):
     def save_all_cycles1():
         file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
         if file_path:
-            # Assume all cycles have the same Mass axis
             mass = cycles[0][0]['Mass']
             n_cycles = len(cycles)
-            # Collect all ion currents
             ion_currents = [cycles[i][0]['Ion Current'] for i in range(n_cycles)]
             with open(file_path, "w") as f:
                 header = "Mass\t" + "\t".join(str(i+1) for i in range(n_cycles)) + "\n"
@@ -249,14 +337,12 @@ def plot_gui(cycles, meta):
                     f.write("\t".join(row) + "\n")
 
     def average_and_save_cycles1():
-        # Ask user for cycles to average (e.g., "1,2,3,4")
         answer = tk.simpledialog.askstring("Average Cycles", f"Enter cycle numbers to average (1-{len(cycles)}), comma separated:")
         if not answer:
             return
         try:
             indices = [int(i.strip()) - 1 for i in answer.split(",")]
             selected = [cycles[i][0] for i in indices]
-            # Assume all cycles have the same Mass axis
             mass = selected[0]['Mass']
             ion_currents = np.array([c['Ion Current'] for c in selected])
             avg = np.mean(ion_currents, axis=0)
@@ -273,9 +359,6 @@ def plot_gui(cycles, meta):
             messagebox.showerror("Error", f"Invalid input or error: {e}")
 
     # Controls for Tab 1
-#    switch_btn1 = ttk.Button(control_frame1, text="Switch 2D/3D", command=switch_mode1)
-#    switch_btn1.pack(side=tk.LEFT, padx=5, pady=5)
-
     cycle_frame1 = ttk.Frame(control_frame1)
     cycle_frame1.pack(side=tk.LEFT, padx=5, pady=5)
 
@@ -291,7 +374,6 @@ def plot_gui(cycles, meta):
     datetime_label1 = ttk.Label(control_frame1, text=f"date/time: {dt_local.isoformat()}")
     datetime_label1.pack(side=tk.LEFT, padx=10)
 
-    # Entry for cycle number
     cycle_entry1 = ttk.Entry(cycle_frame1, width=5)
     cycle_entry1.pack(side=tk.LEFT, padx=5)
     cycle_entry1.insert(0, "1")
@@ -299,14 +381,12 @@ def plot_gui(cycles, meta):
     go_btn1 = ttk.Button(cycle_frame1, text="Go", command=go_to_cycle1)
     go_btn1.pack(side=tk.LEFT)
 
-    # Save current cycle button
     save_btn1 = ttk.Button(control_frame1, text="Save Current Cycle", command=save_current_cycle1)
     save_btn1.pack(side=tk.LEFT, padx=5)
 
     save_all_btn1 = ttk.Button(control_frame1, text="Save All Cycles", command=save_all_cycles1)
     save_all_btn1.pack(side=tk.LEFT, padx=5)
 
-    # Average/normalize cycles button
     avg_btn1 = ttk.Button(control_frame1, text="Average/Normalize Cycles", command=average_and_save_cycles1)
     avg_btn1.pack(side=tk.LEFT, padx=5)
 
@@ -339,22 +419,24 @@ def plot_gui(cycles, meta):
         file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
         if file_path:
             with open(file_path, "w") as f:
-                f.write("Mass\tIon Current\tNormalized\n")
+                f.write("Mass\tBar Intensity\tNormalized\n")
                 for m, ic, nc in zip(x_bars, y_bars, norm_y_bars):
                     f.write(f"{m}\t{ic}\t{nc}\n")
 
     def save_all_cycles2():
         file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
         if file_path:
-            # Assume all cycles have the same Mass axis
-            mass = NIST_MASS_SPECTRA['Mass']
+            mass = NIST_MASS_SPECTRA['Mass/Charge peaks']
             n_cycles = len(cycles)
-            ion_currents = [cycles[i][0]['Ion Current'] for i in range(n_cycles)]
             with open(file_path, "w") as f:
                 header = "Mass\t" + "\t".join(str(i+1) for i in range(n_cycles)) + "\n"
                 f.write(header)
                 for i, m in enumerate(mass):
-                    row = [str(m)] + [str(ion_currents[j][i]) for j in range(n_cycles)]
+                    row = [str(m)]
+                    for j in range(n_cycles):
+                        cycle = cycles[j][0]
+                        x_bars, y_bars, _ = continuum_to_bar_spectra(cycle['Mass'], cycle['Ion Current'], NIST_MASS_SPECTRA)
+                        row.append(str(y_bars[i]))
                     f.write("\t".join(row) + "\n")
 
     def next_cycle2():
@@ -397,7 +479,6 @@ def plot_gui(cycles, meta):
     go_btn2 = ttk.Button(cycle_frame2, text="Go", command=go_to_cycle2)
     go_btn2.pack(side=tk.LEFT)
 
-    # Save current cycle button
     save_btn2 = ttk.Button(control_frame2, text="Save Current Cycle", command=save_current_cycle2)
     save_btn2.pack(side=tk.LEFT, padx=5)
 
@@ -463,17 +544,19 @@ def plot_gui(cycles, meta):
 
     root.mainloop()
 
-# --- File dialog and data loading ---
+# --- File dialog and data loading with loading bar ---
 root = tk.Tk()
 root.withdraw()
 file_path = filedialog.askopenfilename(
-    title="Select a .sac file",
-    filetypes=[("SAC files", "*.sac")]
+    title="Select a .sac or .txt file",
+    filetypes=[("SAC files", "*.sac"), ("Text files", "*.txt"), ("All files", "*.*")]
 )
+
 if file_path:
-    cycles, meta = qsf.process(Path(file_path))
-    root.destroy()
-    plot_gui(cycles, meta)
+    # Show loading bar and process file
+    loading_window = process_file_with_loading(file_path, root)
+    root.mainloop()  # Keep root alive until processing is done
 else:
     print("No file selected.")
+    root.destroy()
     exit()
