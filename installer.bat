@@ -5,6 +5,9 @@ echo ============================================
 
 echo Installing required Python packages...
 pip install scipy numpy matplotlib pathlib datetime pathlib requests bs4
+pushd "path\to\your\package\folder"
+pip install .
+popd
 
 echo.
 echo Installation complete!
