@@ -4,7 +4,7 @@ echo AnaTEMa Toolkit Installer
 echo ============================================
 
 echo Installing required Python packages...
-pip install numpy matplotlib tkinter json pathlib mpl_toolkits datetime pathlib requests bs4 re os time
+pip install scipy numpy matplotlib pathlib datetime pathlib requests bs4
 
 echo.
 echo Installation complete!
