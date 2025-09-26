@@ -4,8 +4,8 @@ echo AnaTEMa Toolkit Installer
 echo ============================================
 
 echo Installing required Python packages...
-pip install scipy numpy matplotlib pathlib datetime pathlib requests bs4
-pushd "path\to\your\package\folder"
+pip install scipy numpy matplotlib requests beautifulsoup4
+pushd "./quadstarfiles"
 pip install .
 popd
 
