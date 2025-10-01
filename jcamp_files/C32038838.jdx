@@ -1,0 +1,28 @@
+##TITLE=2-Propynenitrile, 3-fluoro-
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=HCACAV,61(1)357(1978); G. BIERI ET AL
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=32038-83-8
+##$NIST MASS SPEC NO=65543
+##MOLFORM=C3 F N
+##MW=69
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=24
+##LASTX=69
+##FIRSTY=100
+##MAXX=69
+##MINX=24
+##MAXY=9999
+##MINY=100
+##NPOINTS=6
+##PEAK TABLE=(XY..XY)
+24,100 26,100 31,900 35,400
+50,500 69,9999
+##END=

@@ -1,0 +1,28 @@
+##TITLE=Formic acid hydrazide
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=Pu Leung, NIH, Bethseda, MD
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=624-84-0
+##$NIST MASS SPEC NO=212617
+##MOLFORM=C H4 N2 O
+##MW=60
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=42
+##LASTX=61
+##FIRSTY=2133
+##MAXX=61
+##MINX=42
+##MAXY=9999
+##MINY=343
+##NPOINTS=6
+##PEAK TABLE=(XY..XY)
+42,2133 43,3889 44,1981 59,343
+60,9999 61,562
+##END=

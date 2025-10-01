@@ -1,0 +1,31 @@
+##TITLE=Ethanol, 2-(methylamino)-
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=NIST Mass Spectrometry Data Center, 1998.
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=109-83-1
+##$NIST MASS SPEC NO=291266
+##MOLFORM=C3 H9 N O
+##MW=75
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=15
+##LASTX=75
+##FIRSTY=110
+##MAXX=75
+##MINX=15
+##MAXY=9999
+##MINY=20
+##NPOINTS=20
+##PEAK TABLE=(XY..XY)
+15,110 18,40 26,30 27,240
+28,1280 29,460 30,670 31,240
+32,40 40,170 41,230 42,960
+43,640 44,9999 45,450 54,30
+55,20 56,410 74,80 75,750
+##END=

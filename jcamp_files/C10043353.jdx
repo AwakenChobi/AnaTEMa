@@ -1,0 +1,32 @@
+##TITLE=Boric acid
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=Chemical Concepts
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=10043-35-3
+##$NIST MASS SPEC NO=158012
+##MOLFORM=B H3 O3
+##MW=62
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=22
+##LASTX=64
+##FIRSTY=6
+##MAXX=64
+##MINX=22
+##MAXY=9999
+##MINY=1
+##NPOINTS=24
+##PEAK TABLE=(XY..XY)
+22,6 26,26 27,186 28,393
+29,16 39,4 41,8 42,46
+43,549 44,5525 45,9999 46,38
+47,64 51,2 53,1 55,7
+56,4 57,11 59,6 60,14
+61,2256 62,8263 63,165 64,54
+##END=

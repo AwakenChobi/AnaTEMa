@@ -1,0 +1,27 @@
+##TITLE=Ethyne, difluoro-
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=HCACAV,61(1)357(1978); G. BIERI ET AL
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=689-99-6
+##$NIST MASS SPEC NO=65540
+##MOLFORM=C2 F2
+##MW=62
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=31
+##LASTX=62
+##FIRSTY=700
+##MAXX=62
+##MINX=31
+##MAXY=9999
+##MINY=700
+##NPOINTS=3
+##PEAK TABLE=(XY..XY)
+31,700 43,1400 62,9999
+##END=

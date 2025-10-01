@@ -1,0 +1,28 @@
+##TITLE=Carbonyl sulfide
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=463-58-1
+##$NIST MASS SPEC NO=166
+##MOLFORM=C O S
+##MW=60
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=16
+##LASTX=62
+##FIRSTY=120
+##MAXX=62
+##MINX=16
+##MAXY=9999
+##MINY=80
+##NPOINTS=9
+##PEAK TABLE=(XY..XY)
+16,120 28,1371 32,5765 33,80
+34,240 44,751 60,9999 61,170
+62,430
+##END=

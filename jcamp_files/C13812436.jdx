@@ -1,0 +1,28 @@
+##TITLE=(Z)-Difluorodiazene
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=13812-43-6
+##$NIST MASS SPEC NO=200
+##MOLFORM=F2 N2
+##MW=66
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=14
+##LASTX=66
+##FIRSTY=1351
+##MAXX=66
+##MINX=14
+##MAXY=9999
+##MINY=10
+##NPOINTS=9
+##PEAK TABLE=(XY..XY)
+14,1351 19,811 28,4604 29,40
+33,581 34,10 47,9999 48,100
+66,50
+##END=

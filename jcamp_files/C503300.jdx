@@ -1,0 +1,33 @@
+##TITLE=Trimethylene oxide
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=NIST Mass Spectrometry Data Center, 1990.
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=503-30-0
+##$NIST MASS SPEC NO=118713
+##MOLFORM=C3 H6 O
+##MW=58
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=12
+##LASTX=59
+##FIRSTY=38
+##MAXX=59
+##MINX=12
+##MAXY=9999
+##MINY=2
+##NPOINTS=26
+##PEAK TABLE=(XY..XY)
+12,38 13,104 14,205 15,204
+18,2 19,26 24,60 25,244
+26,2503 27,3283 28,9999 29,3894
+30,647 31,687 37,167 38,182
+39,196 40,32 41,78 42,65
+43,49 53,55 55,82 57,1058
+58,4459 59,176
+##END=

@@ -1,0 +1,28 @@
+##TITLE=Sulfur dioxide
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=7446-09-5
+##$NIST MASS SPEC NO=191
+##MOLFORM=O2 S
+##MW=64
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=16
+##LASTX=66
+##FIRSTY=520
+##MAXX=66
+##MINX=16
+##MAXY=9999
+##MINY=10
+##NPOINTS=10
+##PEAK TABLE=(XY..XY)
+16,520 32,1041 33,10 34,40
+48,4934 49,40 50,230 64,9999
+65,90 66,490
+##END=

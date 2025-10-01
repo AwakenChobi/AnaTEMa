@@ -1,0 +1,31 @@
+##TITLE=Aminoacetonitrile
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=NIST Mass Spectrometry Data Center
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=540-61-4
+##$NIST MASS SPEC NO=340965
+##MOLFORM=C2 H4 N2
+##MW=56
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=16
+##LASTX=57
+##FIRSTY=20
+##MAXX=57
+##MINX=16
+##MAXY=9999
+##MINY=20
+##NPOINTS=20
+##PEAK TABLE=(XY..XY)
+16,20 24,20 25,30 26,120
+27,540 28,1842 29,1812 30,1481
+31,40 38,330 39,360 40,651
+41,110 45,20 52,180 53,1421
+54,290 55,9999 56,5505 57,150
+##END=

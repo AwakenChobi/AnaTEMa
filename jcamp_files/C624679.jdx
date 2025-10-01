@@ -1,0 +1,30 @@
+##TITLE=2-Propynal
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=A.Pleshkova, Nesmeyanov Inst.Org.Elem.Cpds, Moscow
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=624-67-9
+##$NIST MASS SPEC NO=283672
+##MOLFORM=C3 H2 O
+##MW=54
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=24
+##LASTX=56
+##FIRSTY=400
+##MAXX=56
+##MINX=24
+##MAXY=9999
+##MINY=10
+##NPOINTS=16
+##PEAK TABLE=(XY..XY)
+24,400 25,1702 26,4204 27,110
+28,2903 29,1401 30,30 36,701
+37,901 38,400 39,400 52,901
+53,9999 54,5605 55,190 56,10
+##END=

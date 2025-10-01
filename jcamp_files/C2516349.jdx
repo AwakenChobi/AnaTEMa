@@ -1,0 +1,35 @@
+##TITLE=Cyclobutylamine
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=Chuck Anderson, Aldrich Chemical Co.
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=2516-34-9
+##$NIST MASS SPEC NO=107870
+##MOLFORM=C4 H9 N
+##MW=71
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=14
+##LASTX=72
+##FIRSTY=4
+##MAXX=72
+##MINX=14
+##MAXY=9999
+##MINY=4
+##NPOINTS=34
+##PEAK TABLE=(XY..XY)
+14,4 15,73 17,16 18,28
+25,7 26,115 27,407 28,617
+29,101 30,266 33,18 34,31
+36,8 37,73 38,141 39,490
+40,190 41,703 42,3398 43,9999
+44,351 49,18 50,74 51,80
+52,53 53,80 54,77 55,54
+56,78 68,31 69,6 70,34
+71,23 72,66
+##END=

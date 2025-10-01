@@ -1,0 +1,32 @@
+##TITLE=Diaziridine,3,3-dimethyl-
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=A.Pleshkova, Nesmeyanov Inst.Org.Elem.Cpds, Moscow
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=4901-76-2
+##$NIST MASS SPEC NO=283150
+##MOLFORM=C3 H8 N2
+##MW=72
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=27
+##LASTX=74
+##FIRSTY=3103
+##MAXX=74
+##MINX=27
+##MAXY=9999
+##MINY=40
+##NPOINTS=24
+##PEAK TABLE=(XY..XY)
+27,3103 28,4504 29,1501 30,6105
+31,4674 32,9999 33,500 39,3003
+40,1101 41,6406 42,5755 43,1251
+44,450 45,420 46,40 54,3013
+55,1702 56,530 57,2322 58,230
+71,250 72,2012 73,210 74,50
+##END=

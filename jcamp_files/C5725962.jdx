@@ -1,0 +1,32 @@
+##TITLE=Methanamine, N-hydroxy-N-methyl-
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=Chemical Concepts
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=5725-96-2
+##$NIST MASS SPEC NO=154094
+##MOLFORM=C2 H7 N O
+##MW=61
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=25
+##LASTX=63
+##FIRSTY=3
+##MAXX=63
+##MINX=25
+##MAXY=9999
+##MINY=2
+##NPOINTS=23
+##PEAK TABLE=(XY..XY)
+25,3 26,31 27,348 28,1726
+29,262 30,476 31,264 33,37
+38,118 39,202 40,410 41,447
+42,9999 43,3132 44,460 45,281
+46,61 56,2 58,13 60,9164
+61,8002 62,229 63,18
+##END=

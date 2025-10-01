@@ -1,0 +1,28 @@
+##TITLE=Nitrosyl chloride
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=L.FORNSTEDT INST. OF PHYS. CHEM., UPPSALA UNIV., SWEDEN
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=2696-92-6
+##$NIST MASS SPEC NO=38584
+##MOLFORM=Cl N O
+##MW=65
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=14
+##LASTX=51
+##FIRSTY=280
+##MAXX=51
+##MINX=14
+##MAXY=9999
+##MINY=20
+##NPOINTS=8
+##PEAK TABLE=(XY..XY)
+14,280 16,190 30,9999 35,2170
+37,700 46,20 49,160 51,60
+##END=

@@ -37,7 +37,7 @@ def parse_jcamp_peak_table(filepath):
                     pairs.append((int(x), y_float))
     return pairs
 
-def normalize_and_format(mol_name, mz_int, max_mz=50):
+def normalize_and_format(mol_name, mz_int, max_mz=78):
     if not mz_int:
         return ""
     max_int = max(i for _, i in mz_int)
@@ -72,7 +72,7 @@ for mol_name, mol_id in ids_and_names:
         print()
         time.sleep(2)
         continue
-    time.sleep(5)  # Espera 5 segundos entre descargas
+    time.sleep(1)  # Espera 1 segundo entre descargas
 
     mz_int = parse_jcamp_peak_table(file_path)
     print(f"# {mol_name}")

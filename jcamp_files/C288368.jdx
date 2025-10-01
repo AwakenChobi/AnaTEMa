@@ -1,0 +1,29 @@
+##TITLE=1H-1,2,3-Triazole
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=A. MAQUESTIAU
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=288-36-8
+##$NIST MASS SPEC NO=41816
+##MOLFORM=C2 H3 N3
+##MW=69
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=26
+##LASTX=70
+##FIRSTY=230
+##MAXX=70
+##MINX=26
+##MAXY=9999
+##MINY=130
+##NPOINTS=9
+##PEAK TABLE=(XY..XY)
+26,230 27,670 29,690 38,540
+39,640 40,1460 43,130 69,9999
+70,370
+##END=

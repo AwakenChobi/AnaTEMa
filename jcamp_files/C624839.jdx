@@ -1,0 +1,32 @@
+##TITLE=Methane, isocyanato-
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=NIST Mass Spectrometry Data Center, 1998.
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=624-83-9
+##$NIST MASS SPEC NO=291572
+##MOLFORM=C2 H3 N O
+##MW=57
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=12
+##LASTX=59
+##FIRSTY=30
+##MAXX=59
+##MINX=12
+##MAXY=9999
+##MINY=10
+##NPOINTS=23
+##PEAK TABLE=(XY..XY)
+12,30 13,20 14,50 15,120
+16,10 26,170 27,1490 28,3770
+29,720 30,30 38,200 39,150
+40,110 41,20 42,180 43,30
+44,10 54,290 55,770 56,3730
+57,9999 58,280 59,20
+##END=

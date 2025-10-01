@@ -1,0 +1,32 @@
+##TITLE=Propanedinitrile
+##JCAMP-DX=4.24
+##DATA TYPE=MASS SPECTRUM
+##ORIGIN=Japan AIST/NIMC Database- Spectrum MS-NW- 597
+##OWNER=NIST Mass Spectrometry Data Center
+Collection (C) 2014 copyright by the U.S. Secretary of Commerce
+on behalf of the United States of America. All rights reserved.
+##CAS REGISTRY NO=109-77-3
+##$NIST MASS SPEC NO=229070
+##MOLFORM=C3 H2 N2
+##MW=66
+##$NIST SOURCE=MSDC
+##XUNITS=M/Z
+##YUNITS=RELATIVE INTENSITY
+##XFACTOR=1
+##YFACTOR=1
+##FIRSTX=12
+##LASTX=67
+##FIRSTY=209
+##MAXX=67
+##MINX=12
+##MAXY=9999
+##MINY=10
+##NPOINTS=22
+##PEAK TABLE=(XY..XY)
+12,209 13,80 14,70 24,70
+25,99 26,239 27,139 28,1099
+29,10 36,40 37,20 38,2239
+39,2539 40,559 41,30 50,109
+51,119 52,20 64,529 65,819
+66,9999 67,399
+##END=
