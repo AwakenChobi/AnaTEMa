@@ -40,13 +40,13 @@ def find_peak_contributions():
         
         if peaks:
             if num_contrib == 1:
-                print(f"\n🔍 ISOLATED PEAKS ({num_contrib} molecule contributes):")
+                print(f"\n ISOLATED PEAKS ({num_contrib} molecule contributes):")
             elif num_contrib == 2:
-                print(f"\n🔍 PAIR CONTRIBUTIONS ({num_contrib} molecules contribute):")
+                print(f"\n PAIR CONTRIBUTIONS ({num_contrib} molecules contribute):")
             elif num_contrib == 3:
-                print(f"\n🔍 TRIPLE CONTRIBUTIONS ({num_contrib} molecules contribute):")
+                print(f"\n TRIPLE CONTRIBUTIONS ({num_contrib} molecules contribute):")
             else:
-                print(f"\n🔍 {num_contrib}-MOLECULE CONTRIBUTIONS ({num_contrib} molecules contribute):")
+                print(f"\n {num_contrib}-MOLECULE CONTRIBUTIONS ({num_contrib} molecules contribute):")
             
             print("-" * 60)
             
@@ -57,7 +57,7 @@ def find_peak_contributions():
                 print()
     
     # Summary statistics
-    print("\n📊 SUMMARY:")
+    print("\n SUMMARY:")
     print("-" * 30)
     print(f"Total mass/charge values: {len(mass_charges)}")
     
@@ -134,7 +134,7 @@ def analyze_contribution_distribution():
         contributors = sum(1 for molecule in molecule_names if NIST_MASS_SPECTRA[molecule][i] > 0)
         contributor_counts.append(contributors)
     
-    print("\n📈 CONTRIBUTION DISTRIBUTION:")
+    print("\n CONTRIBUTION DISTRIBUTION:")
     print("-" * 40)
     print(f"Average contributors per peak: {np.mean(contributor_counts):.2f}")
     print(f"Median contributors per peak: {np.median(contributor_counts):.2f}")

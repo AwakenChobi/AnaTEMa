@@ -48,7 +48,7 @@ def continuum_to_bar_spectra(x,y,database):
         else:
             y_bars.append(0)
             
-    print("Max value of y_bars before normalization:", np.max(y_bars))
+    # print("Max value of y_bars before normalization:", np.max(y_bars))
     if np.max(y_bars) > 0:
         normalized_y_bars = y_bars / np.max(y_bars) # Normalization
     else:

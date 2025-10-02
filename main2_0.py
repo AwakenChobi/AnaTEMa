@@ -511,7 +511,8 @@ def plot_gui(cycles, meta):
     ax3.clear()
     for idx, (i, name) in enumerate(zip(plot_indices, plot_names)):
         color_idx, style = combinations[idx % len(combinations)]
-        color = color_map(color_idx)
+        # color_idx = combinations_color[idx % len(combinations_color)][1]
+        color = color_map(idx)
         ax3.plot(
             range(1, n_cycles+1),
             intensities[i, :],
@@ -520,6 +521,13 @@ def plot_gui(cycles, meta):
             linestyle=style,
             linewidth=2
         )
+
+    ax3.set_xlabel('Cycle')
+    ax3.set_ylabel('Intensity')
+    ax3.set_yscale('log')
+    ax3.set_title('Molecule Evolution')
+    ax3.legend(loc='upper right', bbox_to_anchor=(1.15, 1.0), fontsize='small', ncol=1)
+    ax3.grid(True)
     
     def save_molecule_evolution():
         file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
@@ -530,15 +538,96 @@ def plot_gui(cycles, meta):
                     row = [name] + [str(intensities[i, j]) for j in range(n_cycles)]
                     f.write("\t".join(row) + "\n")
 
-    ax3.set_xlabel('Cycle')
-    ax3.set_ylabel('Intensity')
-    ax3.set_yscale('log')
-    ax3.set_title('Molecule Evolution')
-    ax3.legend(loc='upper right', bbox_to_anchor=(1.15, 1.0), fontsize='small', ncol=1)
-    ax3.grid(True)
+    def open_compounds_window():
+        new_window = tk.Toplevel(root)
+        new_window.title("Select Compounds")
+
+        # Scrollbar
+        container = ttk.Frame(new_window)
+        container.pack(fill="both", expand=True)
+
+        canvas = tk.Canvas(container)
+        scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
+        )
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # List of compounds
+        compounds = [name for name in NIST_MASS_SPECTRA.keys()]
+
+        # Keep track of the checkbox variables
+        variables = []
+
+        # Create a checkbox for each compound
+        for compound in compounds:
+            if compound == 'Mass/Charge peaks':
+                continue
+            var = tk.BooleanVar(value=True)  # <- Checked by default
+            chk = ttk.Checkbutton(scrollable_frame, text=compound, variable=var)
+            chk.pack(anchor="w", padx=10, pady=2)
+            variables.append((compound, var))
+
+        # Function to print selected compounds
+        def update_equation():
+            selected = [c for c, v in variables if v.get()]
+            filtered_molecules = {name: NIST_MASS_SPECTRA[name] for name in selected}
+            n_cycles = len(cycles)
+            intensities = np.zeros((len(selected), n_cycles))
+            for idx, cycle_list in enumerate(cycles):
+                cycle = cycle_list[0]
+                x = cycle['Mass']
+                y = cycle['Ion Current']
+                _, _, normalized_y_bars = continuum_to_bar_spectra(x, y, NIST_MASS_SPECTRA)
+                filtered_molecules['Mass/Charge peaks'] = NIST_MASS_SPECTRA['Mass/Charge peaks']
+                result = NNLS_solver_mass_spectra(normalized_y_bars, filtered_molecules)
+                intensities[:, idx] = [result[name] for name in selected]
+            plot_indices = [i for i in range(len(selected)) if np.any(intensities[i, :] > 1e-7)]
+            plot_names = [selected[i] for i in plot_indices]
+            ax3.clear()
+            combinations = list(itertools.product(range(num_lines), style_list))
+            for idx, (i, name) in enumerate(zip(plot_indices, plot_names)):
+                color_idx, style = combinations[idx % len(combinations)]
+                # color_idx = combinations_color[idx % len(combinations_color)][1]
+                color = color_map(idx)
+                ax3.plot(
+                    range(1, n_cycles+1),
+                    intensities[i, :],
+                    label=name,
+                    color=color,
+                    linestyle=style,
+                    linewidth=2
+                )
+
+            ax3.legend()
+            ax3.set_xlabel('Cycle')
+            ax3.set_ylabel('Intensity')
+            ax3.set_yscale('log')
+            ax3.set_title('Molecule Evolution')
+            ax3.legend(loc='upper right', bbox_to_anchor=(1.15, 1.0), fontsize='small', ncol=1)
+            ax3.grid(True)
+            canvas3.draw()
+
+
+        # Button to confirm the selection
+        btn = ttk.Button(new_window, text="OK", command=update_equation)
+        btn.pack(pady=10)
 
     save_evolution_btn = ttk.Button(control_frame3, text="Save Molecule Evolution Data", command=save_molecule_evolution)
     save_evolution_btn.pack(side=tk.TOP, padx=5, pady=5)
+
+    little_box_btn = ttk.Button(control_frame3, text="Molecules considered", command=open_compounds_window)
+    little_box_btn.pack(side=tk.TOP, padx=5, pady=5)
 
     canvas3.draw()
 
@@ -555,7 +644,7 @@ file_path = filedialog.askopenfilename(
 if file_path:
     # Show loading bar and process file
     loading_window = process_file_with_loading(file_path, root)
-    root.mainloop()  # Keep root alive until processing is done
+    root.mainloop() 
 else:
     print("No file selected.")
     root.destroy()

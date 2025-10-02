@@ -24,7 +24,7 @@ def NNLS_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
     # A transposition is done since list in python are stored in rows.
     A_list = []
     for mol in molecules:
-        print(f"DEBUG: {mol} spectrum length = {len(NIST_MASS_SPECTRA[mol])}, Mass/Charge peaks length = {len(NIST_MASS_SPECTRA['Mass/Charge peaks'])}")
+        # print(f"DEBUG: {mol} spectrum length = {len(NIST_MASS_SPECTRA[mol])}, Mass/Charge peaks length = {len(NIST_MASS_SPECTRA['Mass/Charge peaks'])}")
         if mol in zero_intensities:
             # If the molecule is in zero_intensities, we set its spectrum to zero
             spectrum = np.zeros(len(NIST_MASS_SPECTRA['Mass/Charge peaks']))
@@ -38,28 +38,15 @@ def NNLS_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
         A_list.append(spectrum)
     A = np.array(A_list).T  # Transpose to have molecules as columns
     
-    print("A matrix row by row:")
-    for i, row in enumerate(A):
-        print(f"Row {i}: {row}")
-        # Right-hand side vector b
+    # print("A matrix row by row:")
+    # for i, row in enumerate(A):
+    #     print(f"Row {i}: {row}")
+    #     # Right-hand side vector b
     
     b = normalized_bar_spectra
 
-    print("b vector:", b)
-    print("length of b:", len(b))
-    
-    # Perform LU factorization and solve
-    #lu, piv = lu_factor(A)
-    #x = lu_solve((lu, piv), b)
-
-    #x = np.linalg.solve(A, b)
-
-    # Create result dictionary
-    #result = {}
-    #for i, mol in enumerate(molecules):
-    #    result[mol] = x[i]
-
-    ########################################### PLACEHOLDER FOR THE RESULT ###########################################
+    # print("b vector:", b)
+    # print("length of b:", len(b))
     
     x, residual = nnls(A, b)
 
@@ -70,6 +57,6 @@ def NNLS_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
 
     print("NNLS residues:", residual)
 
-    print("Resulting coefficients:")
-    print("Resulting intensities:", result)
+    # print("Resulting coefficients:")
+    # print("Resulting intensities:", result)
     return result

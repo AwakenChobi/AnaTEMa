@@ -1,6 +1,7 @@
 # Mass Spectra Database
 # Generated automatically from NIST WebBook
 # Maximum m/z considered: 79
+# !REMEMBER index 0 corresponds to m/z=2, index 1 to m/z=3, ..., index 77 to m/z=79
 
 # Hydrogen
 hydrogen = [0] * 78
