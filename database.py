@@ -12341,12 +12341,9 @@ _2_propanone__1_fluoro_[73] = 0.0060  # m/z=75
 _2_propanone__1_fluoro_[74] = 0.1129  # m/z=76
 _2_propanone__1_fluoro_[75] = 0.0050  # m/z=77
 
-# Mass/Charge peaks (m/z values)
-mass_charge_peaks = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79]
 
 # Complete NIST Mass Spectra Database
-NIST_MASS_SPECTRA = {
-    'Mass/Charge peaks': mass_charge_peaks,
+COMPLETE_NIST_MASS_SPECTRA = {
     'Hydrogen': hydrogen,
     'Deuterium': deuterium,
     'Methane': methane,
@@ -12749,30 +12746,33 @@ NIST_MASS_SPECTRA = {
     '2-Propanone, 1-fluoro-': _2_propanone__1_fluoro_,
 }
 
-def get_molecules_for_mass(target_mass):
-    """
-    Get all molecules that have fragments at the specified mass
-    Args:
-        target_mass (int): Target m/z value
-    Returns:
-        list: List of tuples (molecule_name, intensity)
-    """
-    if target_mass not in NIST_MASS_SPECTRA['Mass/Charge peaks']:
-        return []
-    
-    idx = NIST_MASS_SPECTRA['Mass/Charge peaks'].index(target_mass)
-    molecules_with_fragments = []
-    
-    for mol_name, spectrum in NIST_MASS_SPECTRA.items():
-        if mol_name != 'Mass/Charge peaks':
-            intensity = spectrum[idx]
-            if intensity > 0:
-                molecules_with_fragments.append((mol_name, intensity))
-    
-    # Sort by intensity (descending)
-    molecules_with_fragments.sort(key=lambda x: x[1], reverse=True)
-    return molecules_with_fragments
+def ADJUSTED_NIST_MASS_SPECTRA(max_mass):
 
-# Example usage:
-# molecules_at_28 = get_molecules_for_mass(28)
-# print(f'Molecules with fragments at m/z=28: {molecules_at_28}')
+    if max_mass > 77 or max_mass < 2:
+        max_mass = 77
+
+    #Filter the COMPLETE_NIST_MASS_SPECTRA to include only fragments up to max_mass
+
+    filtered_spectra = {}
+
+    for compound_name, spectrum_data in COMPLETE_NIST_MASS_SPECTRA.items():
+        # for loop will iterate over:
+        #   COMPLETE_NIST_MASS_SPECTRA.items()=[('Mass/Charge peaks',mass_charge_peaks),
+        #   ('Hydrogen', hydrogen), ...,('2-Propanone, 1-fluoro-': _2_propanone__1_fluoro_,)]
+        filtered_spectra = {}
+
+        print(f"Filtering spectrum for {compound_name}")
+
+        fragments = []
+        mass = 0
+
+        for idx, intensity in enumerate(spectrum_data):
+            mass = idx + 2
+            if mass <= max_mass:
+                fragments.append(intensity)
+    
+        filtered_spectra[compound_name] = fragments
+
+    filtered_spectra['Mass/Charge peaks'] = [i + 2 for i in range(max_mass - 1)]
+    
+    return filtered_spectra

@@ -7,8 +7,8 @@ from tkinter import ttk, filedialog, messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.ticker import MaxNLocator
 from pathlib import Path
-from mass_spectra_database import NIST_MASS_SPECTRA # Database in this folder
-from solver import NNLS_solver_mass_spectra_etanol ## Function in this folder
+from database import ADJUSTED_NIST_MASS_SPECTRA # Database in this folder
+from solver import NNLS_solver_mass_spectra ## Function in this folder
 from continuum_to_bar_spectra import continuum_to_bar_spectra #Function in this folder
 from datetime import datetime
 import threading
@@ -80,31 +80,29 @@ def process_file_with_loading(file_path, root):
     return loading_window
 
 def process_txt_file(file_path):
+    # Compatibility with cycles stored in .txt files. This function adapts the data to be compatible with the rest of the code.
+
     """
     Process .txt file with format:
     - First row (ignoring first element): cycle numbers
     - First column (ignoring first element): x coordinates (mass values)
     - Rest: intensities for each x value in respective cycle
     """
-    # Load data skipping the first row (header row)
+
     data = np.loadtxt(file_path, delimiter='\t', skiprows=1)
     
-    # Extract mass values (first column, all data since we already skipped header)
     mass_values = data[:, 0]
     
-    # Extract intensities (all columns except first)
     intensities = data[:, 1:]
     
-    # Number of cycles
     n_cycles = intensities.shape[1]
     
-    # Create cycles structure compatible with the existing code
     cycles = []
     for cycle_idx in range(n_cycles):
         cycle_data = {
             'Mass': mass_values,
             'Ion Current': intensities[:, cycle_idx],
-            'uts': datetime.now().timestamp() + cycle_idx  # Fake timestamp
+            'uts': 'N/A',
         }
         cycles.append([cycle_data])  # Wrap in list to match expected structure
     
@@ -167,6 +165,9 @@ def process_txt_file(file_path):
 
 
 def plot_gui(cycles, meta):
+    max_mass = int(np.max(cycles[0][0]['Mass'])+1)
+    NIST_MASS_SPECTRA = ADJUSTED_NIST_MASS_SPECTRA(max_mass)
+
     root = tk.Tk()
     root.title("Mass Spectra Viewer")
     root.state('zoomed')
@@ -498,7 +499,7 @@ def plot_gui(cycles, meta):
         x = cycle['Mass']
         y = cycle['Ion Current']
         _, _, normalized_y_bars = continuum_to_bar_spectra(x, y, NIST_MASS_SPECTRA)
-        result = NNLS_solver_mass_spectra_etanol(normalized_y_bars, NIST_MASS_SPECTRA)
+        result = NNLS_solver_mass_spectra(normalized_y_bars, NIST_MASS_SPECTRA)
         intensities[:, idx] = [result[name] for name in molecule_names]
 
     plot_indices = [i for i in range(len(molecule_names)) if np.any(intensities[i, :] > 1e-7)]

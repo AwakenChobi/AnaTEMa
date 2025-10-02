@@ -1,0 +1,3 @@
+from database import ADJUSTED_NIST_MASS_SPECTRA
+
+print(ADJUSTED_NIST_MASS_SPECTRA(50))
