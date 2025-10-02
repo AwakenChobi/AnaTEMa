@@ -179,7 +179,6 @@ def plot_gui(cycles, meta):
         )
         if file_path:
             if file_path.lower().endswith('.sac') or file_path.lower().endswith('.txt'):
-                # Show loading bar for new file
                 process_file_with_loading(file_path, root)
             else:
                 messagebox.showerror("Error", "Please select a valid .sac or .txt file.")
