@@ -533,18 +533,45 @@ def plot_gui(cycles, meta):
         file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
         if file_path:
             with open(file_path, "w") as f:
-                f.write("Molecule\t" + "\t".join(f"Cycle_{i+1}" for i in range(n_cycles)) + "\n")
-                for i, name in enumerate(molecule_names):
-                    row = [name] + [str(intensities[i, j]) for j in range(n_cycles)]
-                    f.write("\t".join(row) + "\n")
+                # Get the currently displayed molecules from the plot
+                current_labels = [line.get_label() for line in ax3.get_lines()]
+                
+                if not current_labels:
+                    # If no plot is shown, use all original molecules
+                    f.write("Molecule\t" + "\t".join(f"Cycle_{i+1}" for i in range(n_cycles)) + "\n")
+                    for i, name in enumerate(molecule_names):
+                        row = [name] + [str(intensities[i, j]) for j in range(n_cycles)]
+                        f.write("\t".join(row) + "\n")
+                else:
+                    # Save only the currently displayed molecules
+                    f.write("Molecule\t" + "\t".join(f"Cycle_{i+1}" for i in range(n_cycles)) + "\n")
+                    
+                    # Get the data for each currently displayed molecule
+                    for line in ax3.get_lines():
+                        molecule_name = line.get_label()
+                        y_data = line.get_ydata()  # Get the intensity data from the plot
+                        
+                        # Write the molecule name and its cycle data
+                        row = [molecule_name] + [str(intensity) for intensity in y_data]
+                        f.write("\t".join(row) + "\n")
 
     def open_compounds_window():
         new_window = tk.Toplevel(root)
         new_window.title("Select Compounds")
+        new_window.geometry("400x600")
 
-        # Scrollbar
+        # Search frame at the top
+        search_frame = ttk.Frame(new_window)
+        search_frame.pack(fill="x", padx=10, pady=5)
+        
+        ttk.Label(search_frame, text="Search:").pack(side="left")
+        search_var = tk.StringVar()
+        search_entry = ttk.Entry(search_frame, textvariable=search_var, width=30)
+        search_entry.pack(side="left", padx=5, fill="x", expand=True)
+
+        # Scrollbar container
         container = ttk.Frame(new_window)
-        container.pack(fill="both", expand=True)
+        container.pack(fill="both", expand=True, padx=10, pady=5)
 
         canvas = tk.Canvas(container)
         scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
@@ -564,21 +591,64 @@ def plot_gui(cycles, meta):
         scrollbar.pack(side="right", fill="y")
         
         # List of compounds
-        compounds = [name for name in NIST_MASS_SPECTRA.keys()]
+        compounds = [name for name in NIST_MASS_SPECTRA.keys() if name != 'Mass/Charge peaks']
 
-        # Keep track of the checkbox variables
+        # Keep track of the checkbox variables and widgets
+        all_checkboxes = []
         variables = []
 
-        # Create a checkbox for each compound
+        # Create checkboxes for all compounds
         for compound in compounds:
-            if compound == 'Mass/Charge peaks':
-                continue
-            var = tk.BooleanVar(value=True)  # <- Checked by default
+            var = tk.BooleanVar(value=True)
             chk = ttk.Checkbutton(scrollable_frame, text=compound, variable=var)
             chk.pack(anchor="w", padx=10, pady=2)
             variables.append((compound, var))
+            all_checkboxes.append((compound, var, chk))
 
-        # Function to print selected compounds
+        # Search function
+        def search_compounds(*args):
+            search_text = search_var.get().lower()
+            
+            # Hide all checkboxes first
+            for compound, var, chk in all_checkboxes:
+                chk.pack_forget()
+            
+            # Show only matching checkboxes
+            for compound, var, chk in all_checkboxes:
+                if search_text in compound.lower():
+                    chk.pack(anchor="w", padx=10, pady=2)
+            
+            # Update canvas scroll region
+            scrollable_frame.update_idletasks()
+            canvas.configure(scrollregion=canvas.bbox("all"))
+
+        # Bind search function to entry changes
+        search_var.trace("w", search_compounds)
+
+        # Buttons frame
+        buttons_frame = ttk.Frame(new_window)
+        buttons_frame.pack(fill="x", padx=10, pady=5)
+
+        # Select/Deselect all buttons
+        def select_all():
+            for compound, var, chk in all_checkboxes:
+                # Only select visible checkboxes
+                if chk.winfo_manager():  # Check if widget is packed/visible
+                    var.set(True)
+
+        def deselect_all():
+            for compound, var, chk in all_checkboxes:
+                # Only deselect visible checkboxes
+                if chk.winfo_manager():  # Check if widget is packed/visible
+                    var.set(False)
+
+        select_all_btn = ttk.Button(buttons_frame, text="Select All Visible", command=select_all)
+        select_all_btn.pack(side="left", padx=5)
+
+        deselect_all_btn = ttk.Button(buttons_frame, text="Deselect All Visible", command=deselect_all)
+        deselect_all_btn.pack(side="left", padx=5)
+
+        # Function to update the equation (same as before)
         def update_equation():
             selected = [c for c, v in variables if v.get()]
             filtered_molecules = {name: NIST_MASS_SPECTRA[name] for name in selected}
@@ -598,7 +668,6 @@ def plot_gui(cycles, meta):
             combinations = list(itertools.product(range(num_lines), style_list))
             for idx, (i, name) in enumerate(zip(plot_indices, plot_names)):
                 color_idx, style = combinations[idx % len(combinations)]
-                # color_idx = combinations_color[idx % len(combinations_color)][1]
                 color = color_map(idx)
                 ax3.plot(
                     range(1, n_cycles+1),
@@ -617,11 +686,14 @@ def plot_gui(cycles, meta):
             ax3.legend(loc='upper right', bbox_to_anchor=(1.15, 1.0), fontsize='small', ncol=1)
             ax3.grid(True)
             canvas3.draw()
+            new_window.destroy()  # Close window after updating
 
+        # OK button
+        ok_btn = ttk.Button(buttons_frame, text="OK", command=update_equation)
+        ok_btn.pack(side="right", padx=5)
 
-        # Button to confirm the selection
-        btn = ttk.Button(new_window, text="OK", command=update_equation)
-        btn.pack(pady=10)
+        # Focus on search entry for immediate typing
+        search_entry.focus()
 
     save_evolution_btn = ttk.Button(control_frame3, text="Save Molecule Evolution Data", command=save_molecule_evolution)
     save_evolution_btn.pack(side=tk.TOP, padx=5, pady=5)
