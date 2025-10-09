@@ -490,28 +490,127 @@ def plot_gui(cycles, meta):
     # --- Tab 3: Molecule Evolution ---
     molecule_names = [name for name in NIST_MASS_SPECTRA.keys() if name != 'Mass/Charge peaks']
     n_cycles = len(cycles)
-    intensities = np.zeros((len(molecule_names), n_cycles))
-    print(f'Dimensions of intensities array: {intensities.shape}')
-    print(f'type of intensities: {type(intensities[0,0])}')
-    for idx, cycle_list in enumerate(cycles):
-        cycle = cycle_list[0]
-        x = cycle['Mass']
-        y = cycle['Ion Current']
-        _, _, normalized_y_bars = continuum_to_bar_spectra(x, y, NIST_MASS_SPECTRA)
-        result = NNLS_solver_mass_spectra(normalized_y_bars, NIST_MASS_SPECTRA)
-        intensities[:, idx] = [result[name] for name in molecule_names]
 
+    # Method selection
+    method_frame = ttk.Frame(control_frame3)
+    method_frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
+
+    ttk.Label(method_frame, text="Computation Method:").pack(side=tk.LEFT, padx=5)
+    computation_method = tk.StringVar(value="Normalized Spectra")
+    method_combo = ttk.Combobox(method_frame, textvariable=computation_method, 
+                               values=["Normalized Spectra", "Non-Normalized Spectra"], 
+                               state="readonly", width=20)
+    method_combo.pack(side=tk.LEFT, padx=5)
+
+    def compute_intensities(selected_molecules, use_normalized=True):
+        """Compute molecule intensities for all cycles"""
+        intensities_result = np.zeros((len(selected_molecules), n_cycles))
+        
+        for idx, cycle_list in enumerate(cycles):
+            cycle = cycle_list[0]
+            x = cycle['Mass']
+            y = cycle['Ion Current']
+            
+            if use_normalized:
+                # Normalized spectra
+                _, _, normalized_y_bars = continuum_to_bar_spectra(x, y, NIST_MASS_SPECTRA)
+                input_spectra = normalized_y_bars
+            else:
+                # Non-normalized spectra
+                _, y_bars, _ = continuum_to_bar_spectra(x, y, NIST_MASS_SPECTRA)
+                input_spectra = y_bars
+            
+            filtered_molecules = {name: NIST_MASS_SPECTRA[name] for name in selected_molecules}
+            filtered_molecules['Mass/Charge peaks'] = NIST_MASS_SPECTRA['Mass/Charge peaks']
+            
+            result = NNLS_solver_mass_spectra(input_spectra, filtered_molecules)
+            intensities_result[:, idx] = [result[name] for name in selected_molecules]
+        
+        return intensities_result
+
+    # Update plot
+    def update_molecule_plot():
+        """Update the molecule evolution plot"""
+        use_normalized = computation_method.get() == "Normalized Spectra"
+        
+        new_intensities = compute_intensities(current_molecule_names, use_normalized)
+        
+        nonlocal current_intensities
+        current_intensities = new_intensities
+        
+        plot_indices = [i for i in range(len(current_molecule_names)) if np.any(new_intensities[i, :] > 1e-7)]
+        plot_names = [current_molecule_names[i] for i in plot_indices]
+        
+        ax3.clear()
+        
+        if len(plot_indices) == 0:
+            ax3.text(0.5, 0.5, 'No molecules above threshold', 
+                    transform=ax3.transAxes, ha='center', va='center')
+            canvas3.draw()
+            return
+        
+        num_plot_lines = len(plot_indices)
+        color_map_plot = plt.cm.get_cmap('tab20', max(num_plot_lines, 1))
+        style_list = ['-', '--', '-.', ':']
+        combinations = list(itertools.product(range(max(num_plot_lines, 1)), style_list))
+        
+        for idx, (i, name) in enumerate(zip(plot_indices, plot_names)):
+            color_idx, style = combinations[idx % len(combinations)]
+            color = color_map_plot(idx)
+            
+            y_data = new_intensities[i, :]
+            # Ensure all values are positive for log scale
+            y_data = np.maximum(y_data, 1e-12)
+            
+            ax3.plot(
+                range(1, n_cycles+1),
+                y_data,
+                label=name,
+                color=color,
+                linestyle=style,
+                linewidth=2
+            )
+
+        ax3.set_xlabel('Cycle')
+        ax3.set_ylabel('Intensity')
+        
+        # Force logarithmic scale
+        ax3.set_yscale('log')
+        ax3.set_ylim(bottom=1e-12)  # Set minimum y value for log scale
+        
+        method_text = computation_method.get()
+        ax3.set_title(f'Molecule Evolution - {method_text}')
+        ax3.legend(loc='upper right', bbox_to_anchor=(1.15, 1.0), fontsize='small', ncol=1)
+        ax3.grid(True)
+        canvas3.draw()
+        
+        # Debug: Print scale to verify
+        print(f"Y-axis scale after update: {ax3.get_yscale()}")
+
+    # Initial computation with default method (normalized)
+    intensities = compute_intensities(molecule_names, use_normalized=True)
+
+    # Track current state
+    current_intensities = intensities.copy()  # Track current full dataset
+    current_molecule_names = molecule_names.copy()  # Track current molecules considered
+
+    # Bind method change to update plot
+    def on_method_change(*args):
+        update_molecule_plot()
+
+    method_combo.bind('<<ComboboxSelected>>', on_method_change)
+
+    # Initial plot
     plot_indices = [i for i in range(len(molecule_names)) if np.any(intensities[i, :] > 1e-7)]
     plot_names = [molecule_names[i] for i in plot_indices]
     num_lines = len(plot_indices)
-    color_map = plt.cm.get_cmap('tab20', num_lines)
+    color_map = plt.cm.get_cmap('tab20', max(num_lines, 1))
     style_list = ['-', '--', '-.', ':']
 
-    combinations = list(itertools.product(range(num_lines), style_list))
+    combinations = list(itertools.product(range(max(num_lines, 1)), style_list))
     ax3.clear()
     for idx, (i, name) in enumerate(zip(plot_indices, plot_names)):
         color_idx, style = combinations[idx % len(combinations)]
-        # color_idx = combinations_color[idx % len(combinations_color)][1]
         color = color_map(idx)
         ax3.plot(
             range(1, n_cycles+1),
@@ -525,42 +624,29 @@ def plot_gui(cycles, meta):
     ax3.set_xlabel('Cycle')
     ax3.set_ylabel('Intensity')
     ax3.set_yscale('log')
-    ax3.set_title('Molecule Evolution')
+    ax3.set_title('Molecule Evolution - Normalized Spectra')
     ax3.legend(loc='upper right', bbox_to_anchor=(1.15, 1.0), fontsize='small', ncol=1)
     ax3.grid(True)
-    
+
     def save_molecule_evolution():
         file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
         if file_path:
             with open(file_path, "w") as f:
-                # Get the currently displayed molecules from the plot
-                current_labels = [line.get_label() for line in ax3.get_lines()]
+                f.write("Molecule\t" + "\t".join(f"Cycle_{i+1}" for i in range(n_cycles)) + "\n")
                 
-                if not current_labels:
-                    # If no plot is shown, use all original molecules
-                    f.write("Molecule\t" + "\t".join(f"Cycle_{i+1}" for i in range(n_cycles)) + "\n")
-                    for i, name in enumerate(molecule_names):
-                        row = [name] + [str(intensities[i, j]) for j in range(n_cycles)]
-                        f.write("\t".join(row) + "\n")
-                else:
-                    # Save only the currently displayed molecules
-                    f.write("Molecule\t" + "\t".join(f"Cycle_{i+1}" for i in range(n_cycles)) + "\n")
-                    
-                    # Get the data for each currently displayed molecule
-                    for line in ax3.get_lines():
-                        molecule_name = line.get_label()
-                        y_data = line.get_ydata()  # Get the intensity data from the plot
-                        
-                        # Write the molecule name and its cycle data
-                        row = [molecule_name] + [str(intensity) for intensity in y_data]
-                        f.write("\t".join(row) + "\n")
+                for i, name in enumerate(current_molecule_names):
+                    row = [name] + [str(current_intensities[i, j]) for j in range(n_cycles)]
+                    f.write("\t".join(row) + "\n")
+                
+                print(f"Saved {len(current_molecule_names)} molecules to {file_path}")
+                print(f"This includes all considered molecules, even those with zero intensities")
 
     def open_compounds_window():
         new_window = tk.Toplevel(root)
         new_window.title("Select Compounds")
         new_window.geometry("400x600")
 
-        # Search frame at the top
+        # Search frame
         search_frame = ttk.Frame(new_window)
         search_frame.pack(fill="x", padx=10, pady=5)
         
@@ -593,11 +679,11 @@ def plot_gui(cycles, meta):
         # List of compounds
         compounds = [name for name in NIST_MASS_SPECTRA.keys() if name != 'Mass/Charge peaks']
 
-        # Keep track of the checkbox variables and widgets
+        # track of the checkbox variables and widgets
         all_checkboxes = []
         variables = []
 
-        # Create checkboxes for all compounds
+        # Checkboxes for all compounds
         for compound in compounds:
             var = tk.BooleanVar(value=True)
             chk = ttk.Checkbutton(scrollable_frame, text=compound, variable=var)
@@ -650,43 +736,17 @@ def plot_gui(cycles, meta):
 
         # Function to update the equation (same as before)
         def update_equation():
+            nonlocal current_intensities, current_molecule_names  # Access the tracking variables
+            
             selected = [c for c, v in variables if v.get()]
-            filtered_molecules = {name: NIST_MASS_SPECTRA[name] for name in selected}
-            n_cycles = len(cycles)
-            intensities = np.zeros((len(selected), n_cycles))
-            for idx, cycle_list in enumerate(cycles):
-                cycle = cycle_list[0]
-                x = cycle['Mass']
-                y = cycle['Ion Current']
-                _, _, normalized_y_bars = continuum_to_bar_spectra(x, y, NIST_MASS_SPECTRA)
-                filtered_molecules['Mass/Charge peaks'] = NIST_MASS_SPECTRA['Mass/Charge peaks']
-                result = NNLS_solver_mass_spectra(normalized_y_bars, filtered_molecules)
-                intensities[:, idx] = [result[name] for name in selected]
-            plot_indices = [i for i in range(len(selected)) if np.any(intensities[i, :] > 1e-7)]
-            plot_names = [selected[i] for i in plot_indices]
-            ax3.clear()
-            combinations = list(itertools.product(range(num_lines), style_list))
-            for idx, (i, name) in enumerate(zip(plot_indices, plot_names)):
-                color_idx, style = combinations[idx % len(combinations)]
-                color = color_map(idx)
-                ax3.plot(
-                    range(1, n_cycles+1),
-                    intensities[i, :],
-                    label=name,
-                    color=color,
-                    linestyle=style,
-                    linewidth=2
-                )
-
-            ax3.legend()
-            ax3.set_xlabel('Cycle')
-            ax3.set_ylabel('Intensity')
-            ax3.set_yscale('log')
-            ax3.set_title('Molecule Evolution')
-            ax3.legend(loc='upper right', bbox_to_anchor=(1.15, 1.0), fontsize='small', ncol=1)
-            ax3.grid(True)
-            canvas3.draw()
-            new_window.destroy()  # Close window after updating
+            
+            # Update current molecules
+            current_molecule_names = selected
+            
+            # Recompute with current method
+            update_molecule_plot()
+            
+            new_window.destroy()
 
         # OK button
         ok_btn = ttk.Button(buttons_frame, text="OK", command=update_equation)
@@ -714,7 +774,7 @@ file_path = filedialog.askopenfilename(
 )
 
 if file_path:
-    # Show loading bar and process file
+    # Loading bar and process file
     loading_window = process_file_with_loading(file_path, root)
     root.mainloop() 
 else:

@@ -19,6 +19,12 @@ def NNLS_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
     molecules = [key for key in NIST_MASS_SPECTRA.keys() if key != 'Mass/Charge peaks']
 
     
+    # print("All molecules in database:")
+    # for i, mol in enumerate(molecules):
+    #     print(f"{i}: '{mol}'")
+    #     if 'carbon' in mol.lower() or 'dioxide' in mol.lower():
+    #         print(f"  -> FOUND CARBON DIOXIDE VARIANT: '{mol}'")
+
     # Build the coefficient matrix A
     # Each column corresponds to a molecule, and each row corresponds to a mass/charge peak
     # A transposition is done since list in python are stored in rows.
