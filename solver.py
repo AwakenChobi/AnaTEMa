@@ -3,6 +3,7 @@ import numpy as np
 # from scipy.linalg import lu_factor, lu_solve #LU method does not seem to be suitable for this task
 from scipy.optimize import nnls
 
+
 def NNLS_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
     #normalized_bar_spectra should be a (monodimentional) numpy array ordered by the mass/charge peaks
     # NIST_MASS_SPECTRA should be a dictionary with the format of the variable
@@ -66,3 +67,13 @@ def NNLS_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
     # print("Resulting coefficients:")
     # print("Resulting intensities:", result)
     return result
+
+#def SVD_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
+
+#def regularized_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
+
+#def sparse_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
+
+#def iterative_LSQR_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
+
+#def iterative_LSMR_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
