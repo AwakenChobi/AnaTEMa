@@ -203,7 +203,7 @@ def tikhonov_regularization(NIST_MASS_SPECTRA, normalized_bar_spectra, alpha=1.0
     x = np.linalg.solve(left_side, right_side)
     return x
 
-def regularized_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
+def regularized_ridge_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
     
     def ridge_regression(A, b, alpha=1.0):
 
@@ -228,8 +228,18 @@ def regularized_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
         ridge = Ridge(alpha=alpha, fit_intercept=False, solver='svd')
         ridge.fit(A, b)
         return ridge.coef_
+    
+    alpha = 1.0
 
-    def lasso_regression(A, b, alpha=1.0):
+    x_ridge = ridge_regression(A, b, alpha=alpha)
+    
+    # # Lasso regression
+    # x_lasso = lasso_regression(A, b, alpha=alpha)
+    return x_ridge
+
+def regularized_lasso_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
+        
+    def lasso_regression(A, b, alpha):
 
         # Solve regularized linear system using Lasso regression (L1 regularization).
         
@@ -240,19 +250,27 @@ def regularized_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
         #     Dependent variable values.
         # alpha : float
         #     Regularization strength.
-        
+
         # Returns:
         # x : ndarray, shape (N,)
         #     Regularized solution.
 
         A = np.array(A, dtype=float)
         b = np.array(b, dtype=float)
-        
+
         lasso = Lasso(alpha=alpha, fit_intercept=False, max_iter=10000)
         lasso.fit(A, b)
 
         return lasso.coef_
 
+    alpha = 1.0
+
+    x_lasso = lasso_regression(normalized_bar_spectra, NIST_MASS_SPECTRA, alpha=alpha)
+
+    return x_lasso
+
+
+def regularized_elastic_net_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
     def elastic_net(A, b, alpha=1.0, l1_ratio=0.5):
 
         # Solve regularized linear system using Elastic Net.
@@ -280,27 +298,7 @@ def regularized_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
 
         return elastic.coef_
     
-
-            #     if method == 'ridge':
-            #     model = Ridge(alpha=alpha, fit_intercept=False)
-            # elif method == 'lasso':
-            #     model = Lasso(alpha=alpha, fit_intercept=False, max_iter=10000)
-            # elif method == 'elastic_net':
-            #     model = ElasticNet(alpha=alpha, l1_ratio=0.5, fit_intercept=False, max_iter=10000)
-
- 
-            # alpha = 0.1
-        
-        # # Ridge regression
-        # x_ridge = ridge_regression(A, b, alpha=alpha)
-        
-        # # Lasso regression
-        # x_lasso = lasso_regression(A, b, alpha=alpha)
-        
-        # # Elastic Net
-        # x_elastic = elastic_net(A, b, alpha=alpha, l1_ratio=0.5)
-
-        return x_ridge
+    alpha = 1.0
 
 #def sparse_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
 
