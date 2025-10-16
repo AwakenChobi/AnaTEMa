@@ -8,7 +8,15 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.ticker import MaxNLocator
 from pathlib import Path
 from database import ADJUSTED_NIST_MASS_SPECTRA # Database in this folder
-from solver import NNLS_solver_mass_spectra ## Function in this folder
+from solver import (
+    NNLS_solver_mass_spectra,
+    SVD_solver_mass_spectra,
+    tikhonov_regularization,
+    regularized_ridge_solver_mass_spectra,
+    regularized_lasso_solver_mass_spectra,
+    regularized_elastic_net_solver_mass_spectra,
+    iterative_LSMR_solver_mass_spectra,
+)
 from continuum_to_bar_spectra import continuum_to_bar_spectra #Function in this folder
 from datetime import datetime
 import threading
@@ -496,11 +504,53 @@ def plot_gui(cycles, meta):
     method_frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
 
     ttk.Label(method_frame, text="Computation Method:").pack(side=tk.LEFT, padx=5)
-    computation_method = tk.StringVar(value="Normalized Spectra")
-    method_combo = ttk.Combobox(method_frame, textvariable=computation_method, 
-                               values=["Normalized Spectra", "Non-Normalized Spectra"], 
-                               state="readonly", width=20)
+    # Build solver options: each solver has two variants: Normalized and Raw
+    solver_names = [
+        'NNLS',
+        'SVD',
+        'Tikhonov',
+        'Ridge',
+        'Lasso',
+        'ElasticNet',
+        'LSMR',
+    ]
+    solver_variants = []
+    for s in solver_names:
+        solver_variants.append(f"{s} (Normalized)")
+        solver_variants.append(f"{s} (Raw)")
+
+    computation_method = tk.StringVar(value=solver_variants[0])
+    method_combo = ttk.Combobox(method_frame, textvariable=computation_method,
+                               values=solver_variants,
+                               state="readonly", width=24)
     method_combo.pack(side=tk.LEFT, padx=5)
+
+    def call_solver_by_name(solver_key, input_spectra, filtered_molecules):
+        """Dispatch call to the selected solver by name.
+
+        solver_key: short name like 'NNLS', 'SVD', 'Tikhonov', 'Ridge', 'Lasso', 'ElasticNet', 'LSMR'
+        input_spectra: 1D array (either normalized or raw y_bars)
+        filtered_molecules: dict with 'Mass/Charge peaks' and molecule spectra
+        """
+        if solver_key == 'NNLS':
+            return NNLS_solver_mass_spectra(input_spectra, filtered_molecules)
+        elif solver_key == 'SVD':
+            return SVD_solver_mass_spectra(input_spectra, filtered_molecules)
+        elif solver_key == 'Tikhonov':
+            # default alpha
+            return tikhonov_regularization(filtered_molecules, input_spectra, alpha=1.0)
+        elif solver_key == 'Ridge':
+            return regularized_ridge_solver_mass_spectra(filtered_molecules, input_spectra, alpha=1.0)
+        elif solver_key == 'Lasso':
+            return regularized_lasso_solver_mass_spectra(filtered_molecules, input_spectra, alpha=1.0)
+        elif solver_key == 'ElasticNet':
+            return regularized_elastic_net_solver_mass_spectra(filtered_molecules, input_spectra, alpha=1.0, l1_ratio=0.5)
+        elif solver_key == 'LSMR':
+            return iterative_LSMR_solver_mass_spectra(input_spectra, filtered_molecules)
+        else:
+            # Fallback to NNLS
+            return NNLS_solver_mass_spectra(input_spectra, filtered_molecules)
+
 
     def compute_intensities(selected_molecules, use_normalized=True):
         """Compute molecule intensities for all cycles"""
@@ -519,11 +569,19 @@ def plot_gui(cycles, meta):
                 # Non-normalized spectra
                 _, y_bars, _ = continuum_to_bar_spectra(x, y, NIST_MASS_SPECTRA)
                 input_spectra = y_bars
-            
+
             filtered_molecules = {name: NIST_MASS_SPECTRA[name] for name in selected_molecules}
             filtered_molecules['Mass/Charge peaks'] = NIST_MASS_SPECTRA['Mass/Charge peaks']
-            
-            result = NNLS_solver_mass_spectra(input_spectra, filtered_molecules)
+
+            # Determine selected solver from combobox text
+            selected_text = computation_method.get()
+            # expected format: "NAME (Normalized)" or "NAME (Raw)"
+            if '(' in selected_text:
+                solver_key = selected_text.split('(')[0].strip()
+            else:
+                solver_key = selected_text
+
+            result = call_solver_by_name(solver_key, input_spectra, filtered_molecules)
             intensities_result[:, idx] = [result[name] for name in selected_molecules]
         
         return intensities_result
@@ -531,8 +589,18 @@ def plot_gui(cycles, meta):
     # Update plot
     def update_molecule_plot():
         """Update the molecule evolution plot"""
-        use_normalized = computation_method.get() == "Normalized Spectra"
-        
+        # Parse combobox text to decide normalized vs raw. Expected format: "NAME (Normalized)" or "NAME (Raw)"
+        selected_text = computation_method.get()
+        use_normalized = '(Normalized)' in selected_text
+
+        # Preserve previous y-scale and limits so switching solver doesn't 'lose' the user's scale
+        try:
+            prev_yscale = ax3.get_yscale()
+            prev_ylim = ax3.get_ylim()
+        except Exception:
+            prev_yscale = 'log'
+            prev_ylim = (1e-12, None)
+
         new_intensities = compute_intensities(current_molecule_names, use_normalized)
         
         nonlocal current_intensities
@@ -575,8 +643,25 @@ def plot_gui(cycles, meta):
         ax3.set_ylabel('Intensity')
         
         # Force logarithmic scale
+        # Force logarithmic scale (we always use log for molecule evolution)
         ax3.set_yscale('log')
-        ax3.set_ylim(bottom=1e-12)  # Set minimum y value for log scale
+
+        # Restore previous limits when reasonable. For log scale the lower bound must be > 0.
+        try:
+            if prev_ylim is not None:
+                low, high = prev_ylim
+                # For log scale ensure low > 0
+                if low is None or low <= 0:
+                    low = 1e-12
+                # If previous high was None or equals low, don't set high to avoid singular limits
+                if high is None or high == low:
+                    ax3.set_ylim(bottom=low)
+                else:
+                    ax3.set_ylim(bottom=low, top=high)
+            else:
+                ax3.set_ylim(bottom=1e-12)
+        except Exception:
+            ax3.set_ylim(bottom=1e-12)
         
         method_text = computation_method.get()
         ax3.set_title(f'Molecule Evolution - {method_text}')
