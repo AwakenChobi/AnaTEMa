@@ -139,7 +139,104 @@ def SVD_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
 
     return result
 
-def tikhonov_regularization(NIST_MASS_SPECTRA, normalized_bar_spectra, alpha=1.0, L=None):
+def SVD_solver_mass_spectra_nonneg(NIST_MASS_SPECTRA, normalized_bar_spectra):
+    """SVD solver with non-negativity constraint using constrained optimization"""
+    
+    zero_intensities = {}
+
+    # In order to this function to work, the input `normalized_bar_spectra` should be a normalized numpy array
+    if not isinstance(normalized_bar_spectra, np.ndarray):
+        normalized_bar_spectra = np.array(normalized_bar_spectra)
+    if len(normalized_bar_spectra) != len(NIST_MASS_SPECTRA['Mass/Charge peaks']):
+        raise ValueError("Input 'normalized_bar_spectra' must have the same length as the database.")
+   
+    # Extract molecule names, excluding 'Mass/Charge peaks'
+    molecules = [key for key in NIST_MASS_SPECTRA.keys() if key != 'Mass/Charge peaks']
+
+    A_list = []
+    
+    for mol in molecules:
+        if mol in zero_intensities:
+            # If the molecule is in zero_intensities, we set its spectrum to zero
+            spectrum = np.zeros(len(NIST_MASS_SPECTRA['Mass/Charge peaks']))
+        else:
+            # Otherwise, we extract the spectrum from the database
+            if mol not in NIST_MASS_SPECTRA:
+                raise KeyError(f"Molecule '{mol}' not found in the database.")
+            if len(NIST_MASS_SPECTRA[mol]) != len(NIST_MASS_SPECTRA['Mass/Charge peaks']):
+                raise ValueError(f"Spectrum for '{mol}' does not match the length of 'Mass/Charge peaks'.")
+            spectrum = NIST_MASS_SPECTRA[mol]
+        A_list.append(spectrum)
+    A = np.array(A_list).T  # Transpose to have molecules as columns
+
+    b = np.array(normalized_bar_spectra, dtype=float)
+    A = np.array(A, dtype=float)
+
+    # Define objective function: minimize ||Ax - b||²
+    def objective(x):
+        residual = A @ x - b
+        return np.sum(residual**2)
+    
+    # Initial guess using regular SVD solution
+    try:
+        # Compute the SVD of A
+        U, s, Vt = np.linalg.svd(A, full_matrices=False)
+        
+        # Calculate the pseudoinverse of the diagonal matrix of singular values
+        s_inv = np.diag(np.where(s > 1e-12, 1.0 / s, 0.0))
+        
+        # Compute the pseudoinverse of A
+        A_pinv = Vt.T @ s_inv @ U.T
+        
+        # Get initial solution using SVD
+        x_svd = A_pinv @ b
+        
+        # Use SVD solution as initial guess, but ensure it's non-negative
+        x0 = np.maximum(x_svd, 0.0)
+        
+    except np.linalg.LinAlgError:
+        # Fallback to zero initial guess if SVD fails
+        x0 = np.zeros(A.shape[1])
+    
+    # Non-negativity bounds: x >= 0
+    bounds = [(0, None) for _ in range(A.shape[1])]
+    
+    # Solve with non-negativity constraints
+    result_opt = minimize(objective, x0, bounds=bounds, method='L-BFGS-B')
+    
+    if not result_opt.success:
+        print(f"Warning: SVD NonNeg optimization did not converge. Status: {result_opt.message}")
+    
+    x = result_opt.x
+
+    result = {}
+    for i, mol in enumerate(molecules):
+        result[mol] = x[i]
+
+    return result
+
+# Alpha (α) - Regularization Strength
+# Alpha controls how much regularization to apply:
+
+# Higher α: More regularization
+
+# Solutions become smoother/simpler
+# Reduces overfitting
+# May cause underfitting if too high
+# Coefficients are pushed toward zero
+# Lower α: Less regularization
+
+# Solutions fit the data more closely
+# May allow overfitting
+# Coefficients can be larger
+# α = 0: No regularization (standard least squares)
+
+
+# Ridge/Tikhonov: Good when all molecules might contribute
+# Lasso: Good when only few molecules contribute (sparse solution)
+# Elastic Net: Good compromise between Ridge and Lasso
+
+def tikhonov_regularization(NIST_MASS_SPECTRA, normalized_bar_spectra, alpha=0.1, L=None):
 
     # General Tikhonov regularization: min ||Ax - b||² + alpha * ||Lx||²
     
@@ -215,7 +312,7 @@ def tikhonov_regularization(NIST_MASS_SPECTRA, normalized_bar_spectra, alpha=1.0
     
     return result
 
-def regularized_ridge_solver_mass_spectra(NIST_MASS_SPECTRA, normalized_bar_spectra, alpha=1.0, L=None):
+def regularized_ridge_solver_mass_spectra(NIST_MASS_SPECTRA, normalized_bar_spectra, alpha=0.1, L=None):
 
     zero_intensities = {}
 
@@ -302,7 +399,7 @@ def regularized_ridge_solver_mass_spectra(NIST_MASS_SPECTRA, normalized_bar_spec
     # x_lasso = lasso_regression(A, b, alpha=alpha)
     return result
 
-def regularized_lasso_solver_mass_spectra(NIST_MASS_SPECTRA, normalized_bar_spectra, alpha=1.0):
+def regularized_lasso_solver_mass_spectra(NIST_MASS_SPECTRA, normalized_bar_spectra, alpha=0.1):
 
     zero_intensities = {}
 
@@ -390,7 +487,7 @@ def regularized_lasso_solver_mass_spectra(NIST_MASS_SPECTRA, normalized_bar_spec
 
     return result
 
-def regularized_elastic_net_solver_mass_spectra(NIST_MASS_SPECTRA, normalized_bar_spectra, alpha=1.0, l1_ratio=0.5):
+def regularized_elastic_net_solver_mass_spectra(NIST_MASS_SPECTRA, normalized_bar_spectra, alpha=0.1, l1_ratio=0.5):
 
     zero_intensities = {}
 
@@ -548,4 +645,157 @@ def iterative_LSMR_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA
 
     # print("Resulting coefficients:")
     # print("Resulting intensities:", result)
+    return result
+
+def tikhonov_regularization_nonneg(NIST_MASS_SPECTRA, normalized_bar_spectra, alpha=0.1, L=None):
+    """Tikhonov regularization with non-negativity constraint"""
+    
+    zero_intensities = {}
+
+    # In order to this function to work, the input `normalized_bar_spectra` should be a normalized numpy array
+    if not isinstance(normalized_bar_spectra, np.ndarray):
+        normalized_bar_spectra = np.array(normalized_bar_spectra)
+    if len(normalized_bar_spectra) != len(NIST_MASS_SPECTRA['Mass/Charge peaks']):
+        raise ValueError("Input 'normalized_bar_spectra' must have the same length as the database.")
+   
+    # Extract molecule names, excluding 'Mass/Charge peaks'
+    molecules = [key for key in NIST_MASS_SPECTRA.keys() if key != 'Mass/Charge peaks']
+
+    # print("All molecules in database:")
+    # for i, mol in enumerate(molecules):
+    #     print(f"{i}: '{mol}'")
+    #     if 'carbon' in mol.lower() or 'dioxide' in mol.lower():
+    #         print(f"  -> FOUND CARBON DIOXIDE VARIANT: '{mol}'")
+
+    # Build the coefficient matrix A
+    # Each column corresponds to a molecule, and each row corresponds to a mass/charge peak
+    # A transposition is done since list in python are stored in rows.
+    A_list = []
+    
+    for mol in molecules:
+        # print(f"DEBUG: {mol} spectrum length = {len(NIST_MASS_SPECTRA[mol])}, Mass/Charge peaks length = {len(NIST_MASS_SPECTRA['Mass/Charge peaks'])}")
+        if mol in zero_intensities:
+            # If the molecule is in zero_intensities, we set its spectrum to zero
+            spectrum = np.zeros(len(NIST_MASS_SPECTRA['Mass/Charge peaks']))
+        else:
+            # Otherwise, we extract the spectrum from the database
+            if mol not in NIST_MASS_SPECTRA:
+                raise KeyError(f"Molecule '{mol}' not found in the database.")
+            if len(NIST_MASS_SPECTRA[mol]) != len(NIST_MASS_SPECTRA['Mass/Charge peaks']):
+                raise ValueError(f"Spectrum for '{mol}' does not match the length of 'Mass/Charge peaks'.")
+            spectrum = NIST_MASS_SPECTRA[mol]
+        A_list.append(spectrum)
+    A = np.array(A_list).T  # Transpose to have molecules as columns
+    
+    # print("A matrix row by row:")
+    # for i, row in enumerate(A):
+    #     print(f"Row {i}: {row}")
+    #     # Right-hand side vector b
+    
+    b = normalized_bar_spectra
+
+    A = np.array(A, dtype=float)
+    b = np.array(b, dtype=float)
+    
+    if L is None:
+        L = np.eye(A.shape[1])
+    
+    def objective(x):
+        # Objective: ||Ax - b||² + alpha * ||Lx||²
+        residual = A @ x - b
+        regularization = L @ x
+        return np.sum(residual**2) + alpha * np.sum(regularization**2)
+    
+    # Initial guess
+    x0 = np.zeros(A.shape[1])
+    
+    # Non-negativity bounds: x >= 0
+    bounds = [(0, None) for _ in range(A.shape[1])]
+    
+    # Solve with constraints
+    result_opt = minimize(objective, x0, bounds=bounds, method='L-BFGS-B')
+    x = result_opt.x
+    
+    result = {}
+    molecules = [key for key in NIST_MASS_SPECTRA.keys() if key != 'Mass/Charge peaks']
+    for i, mol in enumerate(molecules):
+        result[mol] = x[i]
+    
+    return result
+
+def regularized_ridge_solver_mass_spectra_nonneg(NIST_MASS_SPECTRA, normalized_bar_spectra, alpha=0.1):
+    """Ridge regression with non-negativity constraint"""
+    
+    zero_intensities = {}
+
+    # In order to this function to work, the input `normalized_bar_spectra` should be a normalized numpy array
+    if not isinstance(normalized_bar_spectra, np.ndarray):
+        normalized_bar_spectra = np.array(normalized_bar_spectra)
+    if len(normalized_bar_spectra) != len(NIST_MASS_SPECTRA['Mass/Charge peaks']):
+        raise ValueError("Input 'normalized_bar_spectra' must have the same length as the database.")
+   
+    # Extract molecule names, excluding 'Mass/Charge peaks'
+    molecules = [key for key in NIST_MASS_SPECTRA.keys() if key != 'Mass/Charge peaks']
+
+    
+    # print("All molecules in database:")
+    # for i, mol in enumerate(molecules):
+    #     print(f"{i}: '{mol}'")
+    #     if 'carbon' in mol.lower() or 'dioxide' in mol.lower():
+    #         print(f"  -> FOUND CARBON DIOXIDE VARIANT: '{mol}'")
+
+    # Build the coefficient matrix A
+    # Each column corresponds to a molecule, and each row corresponds to a mass/charge peak
+    # A transposition is done since list in python are stored in rows.
+
+    A_list = []
+    
+    for mol in molecules:
+        # print(f"DEBUG: {mol} spectrum length = {len(NIST_MASS_SPECTRA[mol])}, Mass/Charge peaks length = {len(NIST_MASS_SPECTRA['Mass/Charge peaks'])}")
+        if mol in zero_intensities:
+            # If the molecule is in zero_intensities, we set its spectrum to zero
+            spectrum = np.zeros(len(NIST_MASS_SPECTRA['Mass/Charge peaks']))
+        else:
+            # Otherwise, we extract the spectrum from the database
+            if mol not in NIST_MASS_SPECTRA:
+                raise KeyError(f"Molecule '{mol}' not found in the database.")
+            if len(NIST_MASS_SPECTRA[mol]) != len(NIST_MASS_SPECTRA['Mass/Charge peaks']):
+                raise ValueError(f"Spectrum for '{mol}' does not match the length of 'Mass/Charge peaks'.")
+            spectrum = NIST_MASS_SPECTRA[mol]
+        A_list.append(spectrum)
+    A = csc_array(A_list).T  # Transpose to have molecules as columns
+    
+    # print("A matrix row by row:")
+    # for i, row in enumerate(A):
+    #     print(f"Row {i}: {row}")
+    #     # Right-hand side vector b
+    
+    b = normalized_bar_spectra
+    
+    def ridge_objective(x, A, b, alpha):
+        # Ridge objective: ||Ax - b||² + alpha * ||x||²
+        residual = A @ x - b
+        return np.sum(residual**2) + alpha * np.sum(x**2)
+    
+    # Convert sparse matrix to dense if needed
+    if hasattr(A, 'toarray'):
+        A = A.toarray()
+    
+    x0 = np.zeros(A.shape[1])
+    bounds = [(0, None) for _ in range(A.shape[1])]
+    
+    result_opt = minimize(
+        lambda x: ridge_objective(x, A, b, alpha), 
+        x0, 
+        bounds=bounds, 
+        method='L-BFGS-B'
+    )
+    
+    x = result_opt.x
+    
+    result = {}
+    molecules = [key for key in NIST_MASS_SPECTRA.keys() if key != 'Mass/Charge peaks']
+    for i, mol in enumerate(molecules):
+        result[mol] = x[i]
+    
     return result

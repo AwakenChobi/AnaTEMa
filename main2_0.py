@@ -11,11 +11,14 @@ from database import ADJUSTED_NIST_MASS_SPECTRA # Database in this folder
 from solver import (
     NNLS_solver_mass_spectra,
     SVD_solver_mass_spectra,
+    SVD_solver_mass_spectra_nonneg,                  # ADD THIS
     tikhonov_regularization,
     regularized_ridge_solver_mass_spectra,
     regularized_lasso_solver_mass_spectra,
     regularized_elastic_net_solver_mass_spectra,
     iterative_LSMR_solver_mass_spectra,
+    tikhonov_regularization_nonneg,           # ADD THIS
+    regularized_ridge_solver_mass_spectra_nonneg,  # ADD THIS
 )
 from continuum_to_bar_spectra import continuum_to_bar_spectra #Function in this folder
 from datetime import datetime
@@ -508,11 +511,14 @@ def plot_gui(cycles, meta):
     solver_names = [
         'NNLS',
         'SVD',
+        'SVD NonNeg',           # ADD THIS
         'Tikhonov',
         'Ridge',
+       
         'Lasso',
-        'ElasticNet',
         'LSMR',
+        'Tikhonov NonNeg',
+        'Ridge NonNeg',
     ]
     solver_variants = []
     for s in solver_names:
@@ -528,7 +534,7 @@ def plot_gui(cycles, meta):
     def call_solver_by_name(solver_key, input_spectra, filtered_molecules):
         """Dispatch call to the selected solver by name.
 
-        solver_key: short name like 'NNLS', 'SVD', 'Tikhonov', 'Ridge', 'Lasso', 'ElasticNet', 'LSMR'
+        solver_key: short name like 'NNLS', 'SVD', 'Tikhonov', 'Ridge', 'Lasso', 'ElasticNet', 'LSMR', 'Tikhonov NonNeg', 'Ridge NonNeg'
         input_spectra: 1D array (either normalized or raw y_bars)
         filtered_molecules: dict with 'Mass/Charge peaks' and molecule spectra
         """
@@ -547,6 +553,10 @@ def plot_gui(cycles, meta):
             return regularized_elastic_net_solver_mass_spectra(filtered_molecules, input_spectra, alpha=1.0, l1_ratio=0.5)
         elif solver_key == 'LSMR':
             return iterative_LSMR_solver_mass_spectra(input_spectra, filtered_molecules)
+        elif solver_key == 'Tikhonov NonNeg':                    # ADD THIS
+            return tikhonov_regularization_nonneg(filtered_molecules, input_spectra, alpha=1.0)
+        elif solver_key == 'Ridge NonNeg':                       # ADD THIS
+            return regularized_ridge_solver_mass_spectra_nonneg(filtered_molecules, input_spectra, alpha=1.0)
         else:
             # Fallback to NNLS
             return NNLS_solver_mass_spectra(input_spectra, filtered_molecules)
