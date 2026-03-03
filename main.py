@@ -9,7 +9,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.ticker import MaxNLocator
 from pathlib import Path
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401tk
-from mass_spectra_database import NIST_MASS_SPECTRA
+from database import COMPLETE_NIST_MASS_SPECTRA
 from datetime import datetime, timezone
 
 ################################################################################
