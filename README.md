@@ -144,6 +144,8 @@ python main2_0.py
 
 Developed by Antonio Cobos Luque (Universidad de Córdoba).
 
+ResearchGate: https://www.researchgate.net/profile/A-Cobos-Luque
+
 Uses NIST mass spectra data and standard Python scientific libraries.
 
 Collaborators:
@@ -159,4 +161,6 @@ Collaborators:
 
 ## License
 
-MIT License (or specify your license here).
+GNU General Public License v3.0 (GPL-3.0).
+
+See `LICENSE` for the full license text.
