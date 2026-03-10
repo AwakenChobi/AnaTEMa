@@ -24,6 +24,45 @@ from continuum_to_bar_spectra import continuum_to_bar_spectra #Function in this 
 from datetime import datetime
 import threading
 import time
+import atexit
+import os
+import signal
+
+# --- Single-instance management via PID lock file ---
+_LOCK_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.anatema.lock')
+
+def _cleanup_lock():
+    """Remove the lock file and close all matplotlib figures on exit."""
+    try:
+        os.remove(_LOCK_FILE)
+    except OSError:
+        pass
+    plt.close('all')
+
+def _kill_previous_instance():
+    """If a previous instance left a lock file, kill that process."""
+    if os.path.exists(_LOCK_FILE):
+        try:
+            with open(_LOCK_FILE, 'r') as f:
+                old_pid = int(f.read().strip())
+            if old_pid != os.getpid():
+                os.kill(old_pid, signal.SIGTERM)
+                time.sleep(0.5)
+        except (ProcessLookupError, ValueError, PermissionError, OSError):
+            pass
+        try:
+            os.remove(_LOCK_FILE)
+        except OSError:
+            pass
+
+def _write_lock():
+    """Write the current PID to the lock file."""
+    with open(_LOCK_FILE, 'w') as f:
+        f.write(str(os.getpid()))
+
+_kill_previous_instance()
+_write_lock()
+atexit.register(_cleanup_lock)
 
 def show_loading_window():
     """Create and show loading window with progress bar"""
@@ -734,8 +773,8 @@ def plot_gui(cycles, meta):
                     f.write("\t".join(row) + "\n")
                 
                 print(f"Saved {len(current_molecule_names)} molecules to {file_path}")
-                print(f"This includes all considered molecules, even those with zero intensities")
-
+                print(f"All molecules considered stored")
+                
     def open_compounds_window():
         new_window = tk.Toplevel(root)
         new_window.title("Select Compounds")
@@ -858,6 +897,11 @@ def plot_gui(cycles, meta):
 
     canvas3.draw()
 
+    def _on_close():
+        plt.close('all')
+        root.destroy()
+
+    root.protocol("WM_DELETE_WINDOW", _on_close)
     root.mainloop()
 
 # --- File dialog and data loading with loading bar ---
