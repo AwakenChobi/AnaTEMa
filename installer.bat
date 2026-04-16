@@ -4,7 +4,7 @@ echo AnaTEMa Toolkit Installer
 echo ============================================
 
 echo Installing required Python packages...
-pip install scipy numpy matplotlib requests beautifulsoup4 scikit-learn
+pip install scipy numpy matplotlib requests beautifulsoup4 scikit-learn mplcursors plotly
 pushd "./quadstarfiles"
 pip install .
 popd

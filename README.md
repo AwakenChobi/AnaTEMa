@@ -21,22 +21,61 @@ AnaTEMa is a Python toolkit for visualizing, analyzing, and processing mass spec
 ## Installation
 
 1. Clone the repository or copy the code files to your workspace.
-2. Install required Python packages:
-   ```bash
-   pip install numpy matplotlib
-   ```
-2. (option 2) run installer.bat if you do not want to install packages manually.
-3. Ensure your `.sac` files and the NIST mass spectra database (`mass_spectra_database.py`) are present in the working directory.
+2. Install the required dependencies.
+
+### Linux
+
+Run the installer from the repository root:
+
+```bash
+chmod +x installer_linux.sh
+bash installer_linux.sh
+```
+
+The script will:
+- install the system Tkinter package when possible,
+- install the required Python packages with `python3 -m pip`,
+- install the local `quadstarfiles` package.
+
+### Windows
+
+Run the bundled installer:
+
+```bat
+installer.bat
+```
+
+### Manual installation
+
+If you prefer to install the dependencies yourself, use:
+
+```bash
+python -m pip install numpy scipy matplotlib requests beautifulsoup4 scikit-learn mplcursors plotly pandas openpyxl
+```
+
+Then install the local parser package:
+
+```bash
+cd quadstarfiles
+python -m pip install .
+```
+
+3. Ensure your `.sac` files and the NIST mass spectra database (`database.py`) are present in the working directory.
 
 - **Packages needed**
 - numpy
 - matplotlib
+- scipy
+- scikit-learn
+- mplcursors
+- plotly
+- pandas
+- openpyxl
 - tkinter
 - json
 - pathlib
 - mpl_toolkits
 - datetime
-- pathlib
 - requests
 - bs4
 - re
