@@ -189,6 +189,7 @@ Uses NIST mass spectra data and standard Python scientific libraries.
 
 Collaborators:
 - Alexhall: mentoring
+- Adrián Ortiz and Álvaro Calero: creators of Para_Linux.py, Smash_bros.py, d_grafico.py and auxiliar_grafica.py
 - Rocío Pérez: testing
 
 **Cite as:** Cobos-Luque, A., AnaTEMa (2025). https://github.com/AwakenChobi/AnaTEMa
