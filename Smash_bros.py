@@ -3,6 +3,8 @@ import json
 import tkinter as tk
 from tkinter import ttk, simpledialog, messagebox
 
+# Credits: Adrián Ortiz and Álvaro Calero.
+
 
 # Archivo donde se guardan los perfiles
 ARCHIVO_PERFILES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "perfiles_smash.json")

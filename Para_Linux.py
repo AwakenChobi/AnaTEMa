@@ -1,5 +1,7 @@
 import platform
 
+# Credits: Adrián Ortiz and Álvaro Calero.
+
 def maximizar(ventana):
 
     ventana.update_idletasks()  # Updates the window to get the correct dimensions

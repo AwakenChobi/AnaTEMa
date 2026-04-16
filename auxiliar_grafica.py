@@ -2,6 +2,8 @@ import time
 
 import numpy as np
 
+# Credits: Adrián Ortiz and Álvaro Calero.
+
 
 def anadir_tooltip_interactivo(ax):
     """

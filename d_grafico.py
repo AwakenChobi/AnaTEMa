@@ -13,8 +13,10 @@ import atexit
 import shutil
 from datetime import datetime
 
+# Credits: Adrián Ortiz and Álvaro Calero.
 
 # --- CONFIGURACIÓN GLOBAL ---
+
 # Creamos un directorio temporal para guardar las gráficas de Plotly
 # y aseguramos que se limpie al cerrar el programa.
 temp_dir = tempfile.mkdtemp()
