@@ -48,10 +48,10 @@ python3 -m pip install --upgrade pip
 python3 -m pip install numpy scipy matplotlib requests beautifulsoup4 scikit-learn mplcursors plotly pandas openpyxl
 
 echo "Installing local quadstarfiles package..."
-pushd "$SCRIPT_DIR/quadstarfiles" >/dev/null
+pushd "$SCRIPT_DIR/quadstarfiles-src" >/dev/null
 python3 -m pip install .
 popd >/dev/null
 
 echo
 echo "Installation complete."
-echo "You can now run AnaTEMa with: python3 main2_0.py"
+echo "You can now run AnaTEMa with: python3 main.py"

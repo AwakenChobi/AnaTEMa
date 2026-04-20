@@ -35,7 +35,7 @@ bash installer_linux.sh
 The script will:
 - install the system Tkinter package when possible,
 - install the required Python packages with `python3 -m pip`,
-- install the local `quadstarfiles` package.
+- install the local `quadstarfiles` package from the `quadstarfiles-src/` directory.
 
 ### Windows
 
@@ -56,7 +56,7 @@ python -m pip install numpy scipy matplotlib requests beautifulsoup4 scikit-lear
 Then install the local parser package:
 
 ```bash
-cd quadstarfiles
+cd quadstarfiles-src
 python -m pip install .
 ```
 
