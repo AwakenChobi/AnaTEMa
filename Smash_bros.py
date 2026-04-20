@@ -1,5 +1,7 @@
 import os
+import sys
 import json
+import shutil
 import tkinter as tk
 from tkinter import ttk, simpledialog, messagebox
 
@@ -7,7 +9,17 @@ from tkinter import ttk, simpledialog, messagebox
 
 
 # Archivo donde se guardan los perfiles
-ARCHIVO_PERFILES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "perfiles_smash.json")
+# PyInstaller compatibility: use the directory where the exe lives for writable files
+if getattr(sys, 'frozen', False):
+    _base_dir = os.path.dirname(sys.executable)
+    ARCHIVO_PERFILES = os.path.join(_base_dir, "perfiles_smash.json")
+    # Copy bundled default if no writable copy exists yet
+    if not os.path.exists(ARCHIVO_PERFILES):
+        _bundled = os.path.join(sys._MEIPASS, "perfiles_smash.json")
+        if os.path.exists(_bundled):
+            shutil.copy2(_bundled, ARCHIVO_PERFILES)
+else:
+    ARCHIVO_PERFILES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "perfiles_smash.json")
 
 def cargar_todos_los_perfiles():
    """Lee el archivo interno y devuelve el diccionario de perfiles."""
