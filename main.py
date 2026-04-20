@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 import quadstarfiles as qsf
 import matplotlib.pyplot as plt
 import tkinter as tk
@@ -899,4 +900,4 @@ if file_path:
 else:
     print("No file selected.")
     root.destroy()
-    exit()
+    sys.exit()
