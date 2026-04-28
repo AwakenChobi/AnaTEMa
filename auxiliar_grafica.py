@@ -5,7 +5,7 @@ import numpy as np
 # Credits: Adrián Ortiz and Álvaro Calero.
 
 
-def anadir_tooltip_interactivo(ax):
+def anadir_tooltip_interactivo(ax, entity_label="Molecule"):
     """
     Anade tooltips interactivos a las lineas actuales de un eje.
 
@@ -126,7 +126,7 @@ def anadir_tooltip_interactivo(ax):
 
         tooltip_state["last_point"] = punto_actual
         annotation.xy = (x_valor, y_valor)
-        annotation.set_text(f"Molecule: {linea.get_label()}\nIntensity: {y_valor:.4e}")
+        annotation.set_text(f"{entity_label}: {linea.get_label()}\nCycle: {int(round(x_valor))}\nIntensity: {y_valor:.4e}")
         annotation.get_bbox_patch().set_edgecolor(linea.get_color())
         if annotation.arrow_patch is not None:
             annotation.arrow_patch.set_color(linea.get_color())

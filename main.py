@@ -263,6 +263,21 @@ def plot_gui(cycles, meta):
 
     current_cycle_bar = tk.IntVar(value=0)
 
+    # --- Tab 2.5: Peak Evolution ---
+    frame_peak = ttk.Frame(notebook)
+    notebook.add(frame_peak, text="Peak Evolution")
+
+    control_frame_peak = ttk.Frame(frame_peak)
+    control_frame_peak.pack(side=tk.BOTTOM, fill=tk.X)
+
+    fig_peak = plt.Figure(figsize=(16, 8))
+    ax_peak = fig_peak.add_subplot(111)
+    canvas_peak = FigureCanvasTkAgg(fig_peak, master=frame_peak)
+    toolbar_peak = NavigationToolbar2Tk(canvas_peak, frame_peak)
+    toolbar_peak.update()
+    toolbar_peak.pack(side=tk.BOTTOM, fill=tk.X)
+    canvas_peak.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=1)
+
     # --- Tab 3: Molecule Evolution ---
     frame_mol = ttk.Frame(notebook)
     notebook.add(frame_mol, text="Molecule Evolution")
@@ -523,6 +538,98 @@ def plot_gui(cycles, meta):
     # --- Tab 3: Molecule Evolution ---
     molecule_names = [name for name in NIST_MASS_SPECTRA.keys() if name != 'Mass/Charge peaks']
     n_cycles = len(cycles)
+
+    # --- Functions for Tab 2.5 (Peak Evolution) ---
+    peak_masses = NIST_MASS_SPECTRA['Mass/Charge peaks']
+
+    def compute_peak_evolution(use_normalized=False):
+        peak_data = np.zeros((len(peak_masses), n_cycles))
+        for idx, cycle_list in enumerate(cycles):
+            cycle = cycle_list[0]
+            x = cycle['Mass']
+            y = cycle['Ion Current']
+            x_bars, y_bars, norm_y_bars = continuum_to_bar_spectra(x, y, NIST_MASS_SPECTRA)
+            if use_normalized:
+                peak_data[:, idx] = norm_y_bars
+            else:
+                peak_data[:, idx] = y_bars
+        return peak_data
+
+    def update_peak_plot():
+        use_norm = peak_norm_var.get()
+        peak_data = compute_peak_evolution(use_norm)
+
+        plot_indices = [i for i in range(len(peak_masses)) if np.any(peak_data[i, :] > 1e-13)]
+
+        ax_peak.clear()
+
+        if len(plot_indices) == 0:
+            ax_peak.text(0.5, 0.5, 'No peaks above threshold',
+                         transform=ax_peak.transAxes, ha='center', va='center')
+            canvas_peak.draw_idle()
+            return
+
+        num_plot_lines = len(plot_indices)
+        color_map_peak = plt.cm.get_cmap('tab20', max(num_plot_lines, 1))
+        style_list = ['-', '--', '-.', ':']
+        combinations_peak = list(itertools.product(range(max(num_plot_lines, 1)), style_list))
+
+        for idx_plot, i in enumerate(plot_indices):
+            color = color_map_peak(idx_plot)
+            _, style = combinations_peak[idx_plot % len(combinations_peak)]
+            y_data = np.maximum(peak_data[i, :], 1e-12)
+            ax_peak.plot(
+                range(1, n_cycles + 1),
+                y_data,
+                label=f'm/z = {peak_masses[i]}',
+                color=color,
+                linestyle=style,
+                linewidth=2
+            )
+
+        ax_peak.set_xlabel('Cycle')
+        ax_peak.set_ylabel('Intensity')
+        ax_peak.set_yscale('log')
+        norm_text = 'Normalized' if use_norm else 'Raw'
+        ax_peak.set_title(f'Peak Evolution - {norm_text}')
+        if peak_legend_visible_var.get():
+            ax_peak.legend(loc='upper right', fontsize='x-small', ncol=3,
+                           framealpha=0.8, borderpad=0.5)
+        ax_peak.grid(True)
+        anadir_tooltip_interactivo(ax_peak, entity_label='Peak')
+        canvas_peak.draw_idle()
+
+    def save_peak_evolution():
+        file_path = filedialog.asksaveasfilename(defaultextension='.txt', filetypes=[('Text files', '*.txt')])
+        if file_path:
+            use_norm = peak_norm_var.get()
+            peak_data = compute_peak_evolution(use_norm)
+            with open(file_path, 'w') as f:
+                f.write('Mass/Charge\t' + '\t'.join(f'Cycle_{i+1}' for i in range(n_cycles)) + '\n')
+                for i, m in enumerate(peak_masses):
+                    row = [str(m)] + [str(peak_data[i, j]) for j in range(n_cycles)]
+                    f.write('\t'.join(row) + '\n')
+
+    # Controls for Peak Evolution tab
+    peak_norm_var = tk.BooleanVar(value=False)
+    peak_legend_visible_var = tk.BooleanVar(value=True)
+
+    def toggle_peak_legend():
+        peak_legend_visible_var.set(not peak_legend_visible_var.get())
+        peak_legend_btn.config(text='Hide Legend' if peak_legend_visible_var.get() else 'Show Legend')
+        update_peak_plot()
+
+    peak_norm_check = ttk.Checkbutton(control_frame_peak, text='Normalized', variable=peak_norm_var,
+                                      command=update_peak_plot)
+    peak_norm_check.pack(side=tk.LEFT, padx=5, pady=5)
+
+    peak_legend_btn = ttk.Button(control_frame_peak, text='Hide Legend', command=toggle_peak_legend)
+    peak_legend_btn.pack(side=tk.LEFT, padx=5, pady=5)
+
+    save_peak_btn = ttk.Button(control_frame_peak, text='Save Peak Evolution Data', command=save_peak_evolution)
+    save_peak_btn.pack(side=tk.LEFT, padx=5, pady=5)
+
+    update_peak_plot()
 
     # Method selection
     method_frame = ttk.Frame(control_frame3)
