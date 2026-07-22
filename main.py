@@ -183,6 +183,7 @@ def process_txt_file(file_path):
 def plot_gui(cycles, meta):
     max_mass = int(np.max(cycles[0][0]['Mass'])+1)
     NIST_MASS_SPECTRA = ADJUSTED_NIST_MASS_SPECTRA(max_mass)
+    n_cycles_total = len(cycles)
 
     root = tk.Tk()
     root.title("Mass Spectra Viewer")
@@ -201,6 +202,38 @@ def plot_gui(cycles, meta):
         
     # Windoes is told to use this function when X is clicked
     root.protocol("WM_DELETE_WINDOW", cerrar_programa_por_completo)
+
+    def parse_cycle_selection(selection_text, total_cycles):
+        """Parse cycle selection like '1,2,5-8' into zero-based unique indices."""
+        if not selection_text or not selection_text.strip():
+            raise ValueError("No cycle selection provided.")
+
+        indices = set()
+        parts = [part.strip() for part in selection_text.split(',') if part.strip()]
+
+        for part in parts:
+            if '-' in part:
+                bounds = [b.strip() for b in part.split('-', 1)]
+                if len(bounds) != 2 or not bounds[0] or not bounds[1]:
+                    raise ValueError(f"Invalid range: '{part}'")
+                start = int(bounds[0])
+                end = int(bounds[1])
+                if start > end:
+                    raise ValueError(f"Range start must be <= end: '{part}'")
+                for cycle_number in range(start, end + 1):
+                    if cycle_number < 1 or cycle_number > total_cycles:
+                        raise ValueError(f"Cycle {cycle_number} is out of range (1-{total_cycles}).")
+                    indices.add(cycle_number - 1)
+            else:
+                cycle_number = int(part)
+                if cycle_number < 1 or cycle_number > total_cycles:
+                    raise ValueError(f"Cycle {cycle_number} is out of range (1-{total_cycles}).")
+                indices.add(cycle_number - 1)
+
+        if not indices:
+            raise ValueError("No valid cycles were selected.")
+
+        return sorted(indices)
 
 
     def open_new_sac():
@@ -384,6 +417,29 @@ def plot_gui(cycles, meta):
                     row = [str(m)] + [str(ion_currents[j][i]) for j in range(n_cycles)]
                     f.write("\t".join(row) + "\n")
 
+    def save_selected_cycles1():
+        answer = tk.simpledialog.askstring(
+            "Save Selected Cycles",
+            f"Enter cycle numbers to save (1-{n_cycles_total}), comma separated and/or ranges (e.g. 1,3,5-8):"
+        )
+        if not answer:
+            return
+        try:
+            selected_indices = parse_cycle_selection(answer, n_cycles_total)
+            file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
+            if not file_path:
+                return
+
+            mass = cycles[0][0]['Mass']
+            with open(file_path, "w") as f:
+                header_cycles = "\t".join(str(i + 1) for i in selected_indices)
+                f.write("Mass\t" + header_cycles + "\n")
+                for i, m in enumerate(mass):
+                    row = [str(m)] + [str(cycles[j][0]['Ion Current'][i]) for j in selected_indices]
+                    f.write("\t".join(row) + "\n")
+        except Exception as e:
+            messagebox.showerror("Error", f"Invalid selection or error: {e}")
+
     def average_and_save_cycles1():
         answer = tk.simpledialog.askstring("Average Cycles", f"Enter cycle numbers to average (1-{len(cycles)}), comma separated:")
         if not answer:
@@ -434,6 +490,9 @@ def plot_gui(cycles, meta):
 
     save_all_btn1 = ttk.Button(control_frame1, text="Save All Cycles", command=save_all_cycles1)
     save_all_btn1.pack(side=tk.LEFT, padx=5)
+
+    save_selected_btn1 = ttk.Button(control_frame1, text="Save Selected Cycles", command=save_selected_cycles1)
+    save_selected_btn1.pack(side=tk.LEFT, padx=5)
 
     avg_btn1 = ttk.Button(control_frame1, text="Average/Normalize Cycles", command=average_and_save_cycles1)
     avg_btn1.pack(side=tk.LEFT, padx=5)
@@ -487,6 +546,33 @@ def plot_gui(cycles, meta):
                         row.append(str(y_bars[i]))
                     f.write("\t".join(row) + "\n")
 
+    def save_selected_cycles2():
+        answer = tk.simpledialog.askstring(
+            "Save Selected Cycles",
+            f"Enter cycle numbers to save (1-{n_cycles_total}), comma separated and/or ranges (e.g. 1,3,5-8):"
+        )
+        if not answer:
+            return
+        try:
+            selected_indices = parse_cycle_selection(answer, n_cycles_total)
+            file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
+            if not file_path:
+                return
+
+            mass = NIST_MASS_SPECTRA['Mass/Charge peaks']
+            with open(file_path, "w") as f:
+                header_cycles = "\t".join(str(i + 1) for i in selected_indices)
+                f.write("Mass\t" + header_cycles + "\n")
+                for i, m in enumerate(mass):
+                    row = [str(m)]
+                    for j in selected_indices:
+                        cycle = cycles[j][0]
+                        _, y_bars, _ = continuum_to_bar_spectra(cycle['Mass'], cycle['Ion Current'], NIST_MASS_SPECTRA)
+                        row.append(str(y_bars[i]))
+                    f.write("\t".join(row) + "\n")
+        except Exception as e:
+            messagebox.showerror("Error", f"Invalid selection or error: {e}")
+
     def next_cycle2():
         if current_cycle_bar.get() < len(cycles) - 1:
             current_cycle_bar.set(current_cycle_bar.get() + 1)
@@ -532,6 +618,9 @@ def plot_gui(cycles, meta):
 
     save_all_btn2 = ttk.Button(control_frame2, text="Save All Cycles", command=save_all_cycles2)
     save_all_btn2.pack(side=tk.LEFT, padx=5)
+
+    save_selected_btn2 = ttk.Button(control_frame2, text="Save Selected Cycles", command=save_selected_cycles2)
+    save_selected_btn2.pack(side=tk.LEFT, padx=5)
 
     update_plot2()
 
