@@ -194,13 +194,13 @@ def plot_gui(cycles, meta):
 
     import sys
     
-    # Función asesina que aniquila el proceso al darle a la X
+    # Kills process when X is clicked
     def cerrar_programa_por_completo():
         root.quit()
         root.destroy()
-        sys.exit(0)  # Esto libera la terminal instantáneamente
+        sys.exit(0)
         
-    # Windoes is told to use this function when X is clicked
+    # Windows is told to use this function when X is clicked
     root.protocol("WM_DELETE_WINDOW", cerrar_programa_por_completo)
 
     def parse_cycle_selection(selection_text, total_cycles):
