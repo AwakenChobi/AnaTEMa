@@ -195,4 +195,5 @@ cython_debug/
 .cursorindexingignore
 
 #Custom, .[extension] to ignore files for specific extensions, [folder]/ to ignore folders.
+data/
 sacpy/
