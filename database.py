@@ -3,6 +3,16 @@
 # Maximum m/z considered: 79
 # !REMEMBER index 0 corresponds to m/z=2, index 1 to m/z=3, ..., index 77 to m/z=79
 
+#To enter molecules in Custom, add them as alilo is introduced and then update the list at the end of the file
+
+#Custom
+
+# Ion alilo
+alilo_ion = [0] * 78
+alilo_ion[39] = 1.0000  # m/z=41
+
+#NIST
+
 # Hydrogen
 hydrogen = [0] * 78
 hydrogen[0] = 1.0000  # m/z=2
@@ -12345,6 +12355,7 @@ _2_propanone__1_fluoro_[75] = 0.0050  # m/z=77
 
 # Complete NIST Mass Spectra Database
 COMPLETE_NIST_MASS_SPECTRA = {
+    'Alilo': alilo_ion,
     'Hydrogen': hydrogen,
     'Deuterium': deuterium,
     'Methane': methane,
