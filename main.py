@@ -24,6 +24,9 @@ from solver import (
     iterative_LSMR_solver_mass_spectra,
     tikhonov_regularization_nonneg,           # ADD THIS
     regularized_ridge_solver_mass_spectra_nonneg,  # ADD THIS
+    bounded_least_squares_solver_mass_spectra,
+    reconstruct_mass_spectrum,
+    relative_residual,
 )
 from continuum_to_bar_spectra import continuum_to_bar_spectra #Function in this folder
 from datetime import datetime
@@ -728,6 +731,7 @@ def plot_gui(cycles, meta):
     # Build solver options: each solver has two variants: Normalized and Raw
     solver_names = [
         'NNLS',
+        'Bounded LS',
         'SVD',
         'SVD NonNeg',           # ADD THIS
         'Tikhonov',
@@ -748,6 +752,8 @@ def plot_gui(cycles, meta):
                                values=solver_variants,
                                state="readonly", width=24)
     method_combo.pack(side=tk.LEFT, padx=5)
+    residual_label = ttk.Label(method_frame, text="Relative residual: --")
+    residual_label.pack(side=tk.LEFT, padx=12)
 
     def call_solver_by_name(solver_key, input_spectra, filtered_molecules):
         """Dispatch call to the selected solver by name.
@@ -760,6 +766,8 @@ def plot_gui(cycles, meta):
             return NNLS_solver_mass_spectra(input_spectra, filtered_molecules)
         elif solver_key == 'SVD':
             return SVD_solver_mass_spectra(input_spectra, filtered_molecules)
+        elif solver_key == 'Bounded LS':
+            return bounded_least_squares_solver_mass_spectra(input_spectra, filtered_molecules)
         elif solver_key == 'Tikhonov':
             # default alpha
             return tikhonov_regularization(filtered_molecules, input_spectra, alpha=1.0)
@@ -780,9 +788,12 @@ def plot_gui(cycles, meta):
             return NNLS_solver_mass_spectra(input_spectra, filtered_molecules)
 
 
-    def compute_intensities(selected_molecules, use_normalized=True):
-        """Compute molecule intensities for all cycles"""
+    def compute_solution_data(selected_molecules, use_normalized=True):
+        """Compute coefficients, reconstructions, and residuals for all cycles."""
         intensities_result = np.zeros((len(selected_molecules), n_cycles))
+        observed_result = np.zeros((len(NIST_MASS_SPECTRA['Mass/Charge peaks']), n_cycles))
+        reconstructed_result = np.zeros_like(observed_result)
+        residuals = np.zeros(n_cycles)
         
         for idx, cycle_list in enumerate(cycles):
             cycle = cycle_list[0]
@@ -797,6 +808,7 @@ def plot_gui(cycles, meta):
                 # Non-normalized spectra
                 _, y_bars, _ = continuum_to_bar_spectra(x, y, NIST_MASS_SPECTRA)
                 input_spectra = y_bars
+            observed_result[:, idx] = input_spectra
 
             filtered_molecules = {name: NIST_MASS_SPECTRA[name] for name in selected_molecules}
             filtered_molecules['Mass/Charge peaks'] = NIST_MASS_SPECTRA['Mass/Charge peaks']
@@ -811,8 +823,14 @@ def plot_gui(cycles, meta):
 
             result = call_solver_by_name(solver_key, input_spectra, filtered_molecules)
             intensities_result[:, idx] = [result[name] for name in selected_molecules]
+            reconstructed = reconstruct_mass_spectrum(result, filtered_molecules)
+            reconstructed_result[:, idx] = reconstructed
+            residuals[idx] = relative_residual(input_spectra, reconstructed)
         
-        return intensities_result
+        return intensities_result, observed_result, reconstructed_result, residuals
+
+    def compute_intensities(selected_molecules, use_normalized=True):
+        return compute_solution_data(selected_molecules, use_normalized)[0]
 
     # Update plot
     def update_molecule_plot():
@@ -829,10 +847,20 @@ def plot_gui(cycles, meta):
             prev_yscale = 'log'
             prev_ylim = (1e-12, None)
 
-        new_intensities = compute_intensities(current_molecule_names, use_normalized)
+        new_intensities, observed_spectra, reconstructed_spectra, residuals = compute_solution_data(
+            current_molecule_names, use_normalized
+        )
         
-        nonlocal current_intensities
+        nonlocal current_intensities, current_observed_spectra
+        nonlocal current_reconstructed_spectra, current_residuals
         current_intensities = new_intensities
+        current_observed_spectra = observed_spectra
+        current_reconstructed_spectra = reconstructed_spectra
+        current_residuals = residuals
+        residual_label.config(
+            text=f"Relative residual: {np.mean(residuals):.3g} "
+                 f"(max {np.max(residuals):.3g})"
+        )
         
         plot_indices = [i for i in range(len(current_molecule_names)) if np.any(new_intensities[i, :] > 1e-7)]
         plot_names = [current_molecule_names[i] for i in plot_indices]
@@ -899,7 +927,13 @@ def plot_gui(cycles, meta):
         canvas3.draw_idle()
 
     # Initial computation with default method (normalized)
-    intensities = compute_intensities(molecule_names, use_normalized=True)
+    intensities, current_observed_spectra, current_reconstructed_spectra, current_residuals = (
+        compute_solution_data(molecule_names, use_normalized=True)
+    )
+    residual_label.config(
+        text=f"Relative residual: {np.mean(current_residuals):.3g} "
+             f"(max {np.max(current_residuals):.3g})"
+    )
 
     # Track current state
     current_intensities = intensities.copy()  # Track current full dataset
@@ -1071,11 +1105,141 @@ def plot_gui(cycles, meta):
         # Focus on search entry for immediate typing
         search_entry.focus()
 
+    def show_inverse_spectra():
+        """Show observed and reconstructed bar spectra for the current solution."""
+        nonlocal current_intensities, current_observed_spectra
+        nonlocal current_reconstructed_spectra, current_residuals
+
+        use_normalized = '(Normalized)' in computation_method.get()
+        (
+            current_intensities,
+            current_observed_spectra,
+            current_reconstructed_spectra,
+            current_residuals,
+        ) = compute_solution_data(current_molecule_names, use_normalized)
+        residual_label.config(
+            text=f"Relative residual: {np.mean(current_residuals):.3g} "
+                 f"(max {np.max(current_residuals):.3g})"
+        )
+
+        inverse_window = tk.Toplevel(root)
+        inverse_window.title("Inverse Bar Spectra")
+        inverse_window.geometry("900x650")
+
+        inverse_fig = plt.Figure(figsize=(9, 6))
+        inverse_ax = inverse_fig.add_subplot(111)
+        inverse_canvas = FigureCanvasTkAgg(inverse_fig, master=inverse_window)
+        inverse_canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+        cycle_var = tk.IntVar(value=1)
+        cycle_frame = ttk.Frame(inverse_window)
+        cycle_frame.pack(fill=tk.X, padx=5, pady=5)
+        ttk.Label(cycle_frame, text="Cycle:").pack(side=tk.LEFT)
+        cycle_spin = tk.Spinbox(
+            cycle_frame, from_=1, to=n_cycles, textvariable=cycle_var, width=6
+        )
+        cycle_spin.pack(side=tk.LEFT, padx=5)
+
+        def update_inverse_plot():
+            try:
+                cycle_index = cycle_var.get() - 1
+            except (tk.TclError, ValueError):
+                messagebox.showerror("Error", "Please enter a valid cycle number.",
+                                     parent=inverse_window)
+                return
+            if not 0 <= cycle_index < n_cycles:
+                messagebox.showerror(
+                    "Error", f"Cycle must be between 1 and {n_cycles}.",
+                    parent=inverse_window
+                )
+                return
+
+            inverse_ax.clear()
+            masses = NIST_MASS_SPECTRA['Mass/Charge peaks']
+            inverse_ax.bar(masses, current_observed_spectra[:, cycle_index],
+                           width=0.45, alpha=0.55, label='Observed')
+            inverse_ax.bar(masses, current_reconstructed_spectra[:, cycle_index],
+                           width=0.25, alpha=0.8, label='Reconstructed')
+            inverse_ax.set_xlabel('Mass/Charge')
+            inverse_ax.set_ylabel(
+                'Normalized intensity (log scale)' if use_normalized
+                else 'Ion current (log scale)'
+            )
+            inverse_ax.set_yscale('log')
+            inverse_ax.set_ylim(1e-7, 1e0)
+            inverse_ax.set_title(
+                f"Inverse Bar Spectrum - Cycle {cycle_index + 1} "
+                f"(relative residual {current_residuals[cycle_index]:.3g})"
+            )
+            inverse_ax.grid(True, which='both', axis='y', linestyle='--')
+            inverse_ax.legend()
+            inverse_canvas.draw_idle()
+
+        ttk.Button(cycle_frame, text="Update", command=update_inverse_plot).pack(
+            side=tk.LEFT, padx=5
+        )
+        def refresh_inverse_solution():
+            nonlocal current_intensities, current_observed_spectra
+            nonlocal current_reconstructed_spectra, current_residuals
+            (
+                current_intensities,
+                current_observed_spectra,
+                current_reconstructed_spectra,
+                current_residuals,
+            ) = compute_solution_data(current_molecule_names, use_normalized)
+            residual_label.config(
+                text=f"Relative residual: {np.mean(current_residuals):.3g} "
+                     f"(max {np.max(current_residuals):.3g})"
+            )
+            update_inverse_plot()
+
+        ttk.Button(
+            cycle_frame, text="Refresh from current solution",
+            command=refresh_inverse_solution,
+        ).pack(side=tk.LEFT, padx=5)
+
+        def download_spectra():
+            file_path = filedialog.asksaveasfilename(
+                parent=inverse_window, defaultextension=".txt",
+                filetypes=[("Text files", "*.txt"), ("CSV files", "*.csv")],
+                title="Save real and synthetic spectra",
+            )
+            if not file_path:
+                return
+            masses = np.asarray(NIST_MASS_SPECTRA['Mass/Charge peaks'])
+            header = (
+                ["Mass/Charge"]
+                + [f"Real_cycle_{i + 1}" for i in range(n_cycles)]
+                + [f"Synthetic_cycle_{i + 1}" for i in range(n_cycles)]
+            )
+            data = np.column_stack(
+                [masses, current_observed_spectra, current_reconstructed_spectra]
+            )
+            try:
+                np.savetxt(file_path, data, delimiter=",",
+                           header=",".join(header), comments="")
+            except OSError as exc:
+                messagebox.showerror("Error", f"Could not save file:\n{exc}",
+                                     parent=inverse_window)
+                return
+            messagebox.showinfo("Saved", f"Spectra saved to {file_path}",
+                                parent=inverse_window)
+
+        ttk.Button(
+            cycle_frame, text="Download real & synthetic spectra",
+            command=download_spectra,
+        ).pack(side=tk.LEFT, padx=5)
+        update_inverse_plot()
+
     save_evolution_btn = ttk.Button(control_frame3, text="Save Molecule Evolution Data", command=save_molecule_evolution)
     save_evolution_btn.pack(side=tk.TOP, padx=5, pady=5)
 
     little_box_btn = ttk.Button(control_frame3, text="Molecules considered", command=open_compounds_window)
     little_box_btn.pack(side=tk.TOP, padx=5, pady=5)
+    inverse_spectra_btn = ttk.Button(
+        control_frame3, text="Show inverse spectra", command=show_inverse_spectra
+    )
+    inverse_spectra_btn.pack(side=tk.TOP, padx=5, pady=5)
 
     canvas3.draw_idle()
 

@@ -9,7 +9,7 @@ AnaTEMa is a Python toolkit for visualizing, analyzing, and processing mass spec
 - **Tabbed GUI** for easy navigation:
   - **Continuum Tab:** View and analyze raw mass spectra for each cycle, switch between 2D/3D views, save data, and average/normalize cycles.
   - **Bar Spectra Tab:** View bar spectra (discrete peaks) for each cycle, save data, and export all cycles.
-  - **Molecule Evolution Tab:** Track the evolution of molecule intensities across cycles, filter molecules by intensity threshold, and export results.
+  - **Molecule Evolution Tab:** Track the evolution of molecule intensities across cycles, inspect the relative reconstruction residual, filter molecules by intensity threshold, export results, and compare observed and inverse bar spectra in a separate window.
 
 - **Background subtraction** and conversion from continuum to bar spectra.
 - **Automated molecule identification** using NIST mass spectra database and linear algebra solvers.
@@ -118,6 +118,9 @@ python main2_0.py
 - **Function:** `NNLS_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA)`
 - Solves for molecule concentrations using linear algebra (non negative least squares).
 - Handles singular matrices and returns molecule intensities.
+- Also provides bounded non-negative least squares (`bounded_least_squares_solver_mass_spectra`),
+  spectrum reconstruction (`reconstruct_mass_spectrum`), and relative residual calculation
+  (`relative_residual`) for evaluating a solution.
 
 ### `mass_spectra_database.py`
 - Contains the NIST mass spectra database as Python dictionaries/lists.
@@ -145,6 +148,8 @@ python main2_0.py
 
 ### **Molecule Evolution Tab**
 - **Plot:** Shows molecule intensities per cycle (filtered by threshold).
+- **Residual:** The solver's mean and maximum relative reconstruction residual are shown next to the solver selector.
+- **Inverse spectra:** Use **Show inverse spectra** to open a separate observed-versus-reconstructed bar-spectrum window. Use **Refresh from current solution** after changing the solver or molecule selection.
 - **Save:** Export all molecule evolution data (including those below threshold).
 - **Legend:** Only molecules above threshold appear in the legend.
 

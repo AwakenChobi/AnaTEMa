@@ -6,9 +6,63 @@ from scipy.linalg import svd
 from sklearn.linear_model import Ridge, Lasso, ElasticNet
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import mean_squared_error
-from scipy.optimize import minimize
+from scipy.optimize import minimize, lsq_linear
 # from scipy.linalg import lu_factor, lu_solve #LU method does not seem to be suitable for this task
 from scipy.optimize import nnls
+
+
+def _build_coefficient_matrix(NIST_MASS_SPECTRA):
+    """Return molecule names and the database matrix used by the solvers."""
+    if 'Mass/Charge peaks' not in NIST_MASS_SPECTRA:
+        raise KeyError("NIST_MASS_SPECTRA must contain 'Mass/Charge peaks'.")
+
+    peaks = NIST_MASS_SPECTRA['Mass/Charge peaks']
+    molecules = [key for key in NIST_MASS_SPECTRA if key != 'Mass/Charge peaks']
+    spectra = []
+    for molecule in molecules:
+        spectrum = np.asarray(NIST_MASS_SPECTRA[molecule], dtype=float)
+        if spectrum.ndim != 1 or len(spectrum) != len(peaks):
+            raise ValueError(
+                f"Spectrum for '{molecule}' does not match the length of "
+                "'Mass/Charge peaks'."
+            )
+        spectra.append(spectrum)
+
+    return molecules, np.column_stack(spectra) if spectra else np.empty((len(peaks), 0))
+
+
+def reconstruct_mass_spectrum(solution, NIST_MASS_SPECTRA):
+    """Reconstruct a bar spectrum from molecule coefficients."""
+    molecules, matrix = _build_coefficient_matrix(NIST_MASS_SPECTRA)
+    coefficients = np.asarray([solution.get(name, 0.0) for name in molecules], dtype=float)
+    return matrix @ coefficients
+
+
+def relative_residual(observed_spectrum, reconstructed_spectrum):
+    """Return the relative least-squares residual of a reconstructed spectrum."""
+    observed = np.asarray(observed_spectrum, dtype=float)
+    reconstructed = np.asarray(reconstructed_spectrum, dtype=float)
+    if observed.shape != reconstructed.shape:
+        raise ValueError("Observed and reconstructed spectra must have the same shape.")
+    denominator = np.linalg.norm(observed)
+    if denominator == 0:
+        return float(np.linalg.norm(observed - reconstructed))
+    return float(np.linalg.norm(observed - reconstructed) / denominator)
+
+
+def bounded_least_squares_solver_mass_spectra(
+    normalized_bar_spectra, NIST_MASS_SPECTRA
+):
+    """Solve the spectrum decomposition with non-negative bounded least squares."""
+    molecules, matrix = _build_coefficient_matrix(NIST_MASS_SPECTRA)
+    observed = np.asarray(normalized_bar_spectra, dtype=float)
+    if observed.ndim != 1 or len(observed) != matrix.shape[0]:
+        raise ValueError("Input 'normalized_bar_spectra' must match the database.")
+
+    solved = lsq_linear(matrix, observed, bounds=(0, np.inf), method='trf')
+    if not solved.success:
+        raise RuntimeError(f"Bounded least-squares solver failed: {solved.message}")
+    return dict(zip(molecules, solved.x))
 
 
 def NNLS_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
@@ -139,7 +193,7 @@ def SVD_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA):
 
     return result
 
-def SVD_solver_mass_spectra_nonneg(NIST_MASS_SPECTRA, normalized_bar_spectra):
+def SVD_solver_mass_spectra_nonneg(normalized_bar_spectra, NIST_MASS_SPECTRA):
     """SVD solver with non-negativity constraint using constrained optimization"""
     
     zero_intensities = {}
@@ -475,8 +529,6 @@ def regularized_lasso_solver_mass_spectra(NIST_MASS_SPECTRA, normalized_bar_spec
 
         return lasso.coef_
 
-    alpha = 1.0
-
     # Call lasso_regression with the coefficient matrix A and right-hand side b
     x_lasso = lasso_regression(A, b, alpha=alpha)
 
@@ -630,12 +682,13 @@ def iterative_LSMR_solver_mass_spectra(normalized_bar_spectra, NIST_MASS_SPECTRA
     # print("b vector:", b)
     # print("length of b:", len(b))
     
-    x, istop, itn, normr = lsmr(A, b)
+    lsmr_result = lsmr(A, b)
+    x, istop, itn, normr = lsmr_result[:4]
 
-    if istop != 7:
-        print(f"LSMR finished with istop={istop}, itn={itn}, normr={normr}")
-    else:
-        print("LSMR ITN reached maxiter before the other stopping conditions were satisfied.")
+    if istop == 7:
+        print("LSMR reached its iteration limit before another stopping condition.")
+    elif istop not in (1, 2, 3, 4, 5, 6):
+        print(f"LSMR finished with unexpected istop={istop}, itn={itn}, normr={normr}")
 
 
     result = {}
